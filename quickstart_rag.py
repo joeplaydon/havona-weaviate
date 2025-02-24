@@ -16,14 +16,15 @@ client = weaviate.connect_to_weaviate_cloud(
     headers={"X-Cohere-Api-Key": cohere_api_key},           # Replace with your Cohere API key
 )
 
-questions = client.collections.get("Question")
+questions = client.collections.get("HavonaTestCohere")
 
 response = questions.generate.near_text(
-    query="biology",
-    limit=2,
-    grouped_task="Write a tweet with emojis about these facts."
+    query="deal",
+    limit=4,
+    grouped_task="What currency is being used for this transaction and what are the payment terms? Is transhipment allowed for this shipment from Baltimore to Cebu City?"
 )
 
 print(response.generated)  # Inspect the generated text
 
 client.close()  # Free up resources
+

@@ -16,10 +16,10 @@ client = weaviate.connect_to_weaviate_cloud(
     headers={"X-Cohere-Api-Key": cohere_api_key},           # Replace with your Cohere API key
 )
 
-questions = client.collections.get("Question")
+questions = client.collections.get("HavonaMasterJSON")
 
 response = questions.query.near_text(
-    query="biology",
+    query="incoterms",
     limit=2
 )
 

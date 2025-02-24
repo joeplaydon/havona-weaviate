@@ -1,0 +1,140 @@
+{
+  "DttMasterJsonDeal": {
+    "id": "PT-001",
+    "dtt": {
+      "DigitalTradeTransaction": "DTT_Initialised"
+    },
+    "file": {
+      "FreeForm": null
+    },
+    "contractNo": null,
+    "contractDate": "2023-03-29T00:00:00",
+    "status": {
+      "DigitalTradeTransactionStatus": "DTT_Initialised"
+    },
+    "incoTerms": {
+      "IncoTerm": "CPT"
+    },
+    "productGoods": {
+      "name": "Hard Red Winter Wheat",
+      "quantity": 125,
+      "price": {
+        "MoneyAmount": 308.571
+      },
+      "subtotal": 38571.25,
+      "weightUnit": "METRIC TON",
+      "hsCode": 1101000010,
+      "qualitySpecifications": {
+        "FreeForm": "Hard Red Winter Wheat, Test Weight (lb/bu): Min 60, Test Weight (kg/hl): Min 80, Moisture (%): Max 12, Wheat Protein (%) 12% mb: Min 12, Wheat Protein (%) 0% mb: Min 12, Wheat Falling Number (sec): Min 350"
+      },
+      "qualityWeightConditions": {
+        "FreeForm": "All final at the place of loading as per certificate(s) issued by Agri Measure Surveyors at seller's cost, and buyers might do pre-shipment sampling and analysis through their own surveyor at the load port."
+      },
+      "originCountry": "USA",
+      "originLocation": "US KSJ"
+    },
+    "paymentTerms": {
+      "currencyCode": "USD",
+      "paymentTermsCode": "LC_LETTER_OF_CREDIT"
+    },
+    "delivery": {
+      "partialShipment": false,
+      "transhipment": false,
+      "demurrageDetention": {
+        "Member": "Buyer"
+      },
+      "packaging": "TO BE PACKED IN 50KG PP BAGS IN 20FT CONTAINERS",
+      "uNLocationCodeTypePortsOther": "PORT_UNCODE_1",
+      "latestShipmentDate": "2023-11-15",
+      "latestDeliveryDate": "2023-11-15"
+    },
+    "transports": {
+      "loadLocation": {
+        "Location": "PORT OF BALTIMORE"
+      },
+      "UNLocationCode": "USBAL",
+      "dischargeLocation": {
+        "Location": "PORT OF CEBU CITY"
+      },
+      "plannedDepartureDate": null,
+      "plannedArrivalDate": null,
+      "modeOfTransport": {
+        "TransportMode": "VESSEL"
+      },
+      "vesselIMONumber": "NCL 01",
+      "carrierVoyageNumber": "240",
+      "isUnderShippersResponsibility": true
+    },
+    "principlePaymentParties": {
+      "obligorPrincipleParty": {
+        "Member": "PINOY IMPORT TRADE, 5 TOMAS CABILES AVENUE, TABACO, MANILLA, PHILIPPINES"
+      },
+      "obligorFSP": {
+        "Member": "Manila International Bank Suite 3001, Apex Tower 88 Ortigas Avenue Pasig, Metro Manila 1605 Philippines"
+      },
+      "beneficiaryPrincipleParty": {
+        "Member": "TERRA COMMODITIES INTERNATIONAL 1 BOULEVARD SUISSE, LAUSANNE, VD, 1000, SWITZERLAND"
+      },
+      "beneficiaryFSP": {
+        "Member": "CELESTIAL COMMERCE BANK 1 PLACE LONGEMALLE GENEVA, SWITZERLAND"
+      }
+    },
+    "dutiesAndTaxes": {
+      "dutiesAndTaxesCode": null
+    },
+    "requiredDocuments": [
+      {
+        "documentType": "CONTRACT_CODE_315",
+        "documentStatus": "Pending"
+      },
+      {
+        "documentType": "CERTIFICATE_OF_ANALYSIS_CODE_1",
+        "documentStatus": "Pending"
+      },
+      {
+        "documentType": "CERTIFICATE_OF_ORIGIN_861",
+        "documentStatus": "Issued"
+      },
+      {
+        "documentType": "PROFORMA_INVOICE_CODE_325",
+        "documentStatus": "Pending"
+      },
+      {
+        "documentType": "COMMERCIAL_INVOICE_CODE_380",
+        "documentStatus": "Issued"
+      },
+      {
+        "documentType": "PHYTO_SANITARY_CERT_CODE_851",
+        "documentStatus": "Pending"
+      },
+      {
+        "documentType": "SANITARY_CERTIFICATE_CODE_852",
+        "documentStatus": "Pending"
+      },
+      {
+        "documentType": "PACKING_LIST_CODE_271",
+        "documentStatus": "Pending"
+      },
+      {
+        "documentType": "DOCUMENTARY_CREDIT_LETTER_OF_INDEMNITY_CODE_431",
+        "documentStatus": "Pending"
+      },
+      {
+        "documentType": "MASTER_BILL_OF_LADING_CODE_704",
+        "documentStatus": "Pending"
+      },
+      {
+        "documentType": "BILL_OF_LADING_CODE_705",
+        "documentStatus": "Pending"
+      },
+      {
+        "documentType": "BILL_OF_LADING_ORIGINAL_CODE_706",
+        "documentStatus": "Pending"
+      },
+      {
+        "documentType": "INSURANCE_CERTIFICATE_CODE_520",
+        "documentStatus": "Pending"
+      }
+    ]
+  }
+}

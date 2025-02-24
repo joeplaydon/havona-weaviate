@@ -1,6 +1,6 @@
 import weaviate
 from weaviate.classes.init import Auth
-import requests, json, os
+import json, os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,23 +16,51 @@ client = weaviate.connect_to_weaviate_cloud(
     headers={"X-Cohere-Api-Key": cohere_api_key},           # Replace with your Cohere API key
 )
 
-resp = requests.get(
-    "https://raw.githubusercontent.com/weaviate-tutorials/quickstart/main/data/jeopardy_tiny.json"
-)
-data = json.loads(resp.text)
+# Read the local havona_schema.json file
+with open('havona_schema.json', 'r') as file:
+    data = json.load(file)
 
-questions = client.collections.get("HavonaSchema")
+questions = client.collections.get("HavonaTestCohere")
 
 with questions.batch.dynamic() as batch:
-    for d in data:
-        batch.add_object({
-            "answer": d["Answer"],
-            "question": d["Question"],
-            "category": d["Category"],
-        })
-        if batch.number_errors > 10:
-            print("Batch import stopped due to excessive errors.")
-            break
+    deal = data["DttMasterJsonDeal"]
+    # Create object matching the schema structure, without 'id' fields
+    trade_object = {
+        "reference": deal["id"],  # renamed from id
+        "tradeContract": {
+            "reference": deal["id"],  # renamed from id
+            "dtt": deal["dtt"]["DigitalTradeTransaction"],
+            "contractNo": deal["contractNo"],
+            "contractDate": deal["contractDate"],
+            "status": deal["status"]["DigitalTradeTransactionStatus"],
+            "incoTerms": deal["incoTerms"]["IncoTerm"]
+        },
+        "productGoods": {
+            "name": deal["productGoods"]["name"],
+            "quantity": deal["productGoods"]["quantity"],
+            "price": deal["productGoods"]["price"]["MoneyAmount"],
+            "subtotal": deal["productGoods"]["subtotal"],
+            "weightUnit": deal["productGoods"]["weightUnit"],
+            "hsCode": deal["productGoods"]["hsCode"],
+            "originCountry": deal["productGoods"]["originCountry"],
+            "originLocation": deal["productGoods"]["originLocation"]
+        },
+        "delivery": {
+            "partialShipment": deal["delivery"]["partialShipment"],
+            "transhipment": deal["delivery"]["transhipment"],
+            "packaging": deal["delivery"]["packaging"],
+            "latestShipmentDate": deal["delivery"]["latestShipmentDate"],
+            "latestDeliveryDate": deal["delivery"]["latestDeliveryDate"]
+        },
+        "transports": {
+            "loadLocation": deal["transports"]["loadLocation"]["Location"],
+            "UNLocationCode": deal["transports"]["UNLocationCode"],
+            "dischargeLocation": deal["transports"]["dischargeLocation"]["Location"],
+            "plannedDepartureDate": deal["transports"]["plannedDepartureDate"],
+            "plannedArrivalDate": deal["transports"]["plannedArrivalDate"]
+        }
+    }
+    batch.add_object(trade_object)
 
 failed_objects = questions.batch.failed_objects
 if failed_objects:

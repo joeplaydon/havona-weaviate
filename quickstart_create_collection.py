@@ -13,8 +13,8 @@ client = weaviate.connect_to_weaviate_cloud(
     auth_credentials=Auth.api_key(wcd_api_key),             # Replace with your Weaviate Cloud key
 )
 
-questions = client.collections.create(
-    name="Question",
+HavonaTestMain = client.collections.create(
+    name="HavonaTestCohere",
     vectorizer_config=Configure.Vectorizer.text2vec_cohere(),   # Configure the Cohere embedding integration
     generative_config=Configure.Generative.cohere()             # Configure the Cohere generative AI integration
 )
