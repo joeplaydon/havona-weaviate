@@ -1,0 +1,2670 @@
+## Havona Core Schema ##
+
+type DigitalTradeTransaction {
+    id: ID						
+    tradeContract: TradeContract
+    status :DigitalTradeTransactionStatus
+    electronicPaymentUndertakings: [ElectronicPaymentUndertakings]
+    electronicRecords: [ElectronicRecord]
+    DLTBlockchainTransactions: [DLTTransaction]
+    principleParties: [PrincipleParties]
+    paymentTerms: [PaymentTerms]
+    digitalTradeLawJurisdiction: DigitalTradeLawJurisdiction
+    transportDocumentEBL: TransportDocumentEBL
+   	uniqueTradeIdentifier: String
+  	optionsRelatedFields: String
+    fieldStatuses: [FieldStatus] # Tracks current field status
+  	fieldHistories: [FieldHistory] # Tracks changes over time
+}
+
+type TradeContract implements ElectronicRecord {
+    id: ID
+    dtt: DigitalTradeTransaction
+    file: FreeForm
+    uNECEDocumentCodes: [UNECEDocumentCodes]
+    contractNo: String
+    contractDate: DateTime
+    status: DigitalTradeTransactionStatus @search
+    incoTerms: IncoTerm
+    paymentTerms: PaymentTerms
+    productGoods: ProductGoods
+    generalConditions: GeneralConditions
+    delivery: GoodsDelivery
+    seller: Member 
+    buyer: Member 
+    broker: Member
+    principleParties: PrincipleParties
+    principlePaymentParties: PrinciplePaymentParties
+    insurance: Insurance
+    titleRisk: Member
+    arbitrationCourtsOfLaw: UNLocationCode
+    signatures: [Signature]
+    postTradeDocumentSeals: [PostTradeDocumentSeal]
+   	fieldStatuses: [FieldStatus] # Tracks current field status
+  	fieldHistories: [FieldHistory] # Tracks changes over time
+}
+
+type ProductGoods {
+    name: String
+    quantity: Int
+    price: MoneyAmount
+    subtotal: Float
+    weightUnit: WeightUnit
+    hsCode: String
+    hsnCode: String
+    htsCode: String
+    hsCodeDescription: HSCodes
+    unitMeasurements: UnitMeasurements
+    qualitySpecifications : FreeForm
+    qualityWeightConditions: FreeForm
+    originCountry: UNCountryCode
+    originLocation: UNLocationCode
+}
+
+## Crypto
+
+type DLTTransaction {
+    participants: [Member]                      # Participants
+    signers: [Member]                           # Signers
+    signatures: [Signature]                     # Signatures
+    transactionHash: String                     # Transaction hash
+    inputStateRefs: [String]                    # Input state references
+    outputStatesRefs: [String]                  # Output state references
+}
+
+type PostTradeDocumentSeal {
+    id: ID                                      # Seal identifier
+    dtt: DigitalTradeTransaction                # Digital trade transaction
+    documentStatus: DocumentStatus              # Document status
+    documentContentDigest: FreeForm             # Document content digest
+    documentHashValue: String                   # Document hash value
+    documentSignature: FreeForm                 # Document signature
+}
+
+type Signature {
+    signatureData: String                       # Signature data
+    DLTTransaction: DLTTransaction              # DLT transaction
+    authorisedSignatoryName: MemberCollaborator # Signatory name
+    signatoryOrganisation: Member               # Signatory organization
+    signatureStamp: MemberCollaborator          # Signature stamp
+    havonaPublicKey: MemberCollaborator         # Havona public key
+    otherPublicKey: MemberCollaborator          # Other public key
+    signatureDateTime: DateTime                 # Signature date/time
+    signaturePlace: UNLocationCode              # Signature place
+}
+
+## Payment
+
+type Currency {
+    name: String
+    ISOCurrencyCode: ISOCurrencyCode
+    currencyType: CurrencyType
+}
+
+type PaymentTerms {
+    paymentTermsCode: PaymentTermsCode
+    currencyCode: ISOCurrencyCode
+    principlePaymentParties: PrinciplePaymentParties
+    swiftCode: String
+    aba: Int
+    accountNumber: Int
+    reference: Int
+    paymentAmount: MoneyAmount
+    paymentRails: PaymentRails
+}
+
+type PaymentRails {
+    swiftGPI: SwiftGPI
+    swiftISO20022: SwiftISO20022
+    cbdc: CBDC
+    bricsPlus: BricsPlus
+    bricsPay: BricsPay
+    fasterPaymentsUK: FasterPaymentsUK
+    sepaCredit: SepaCredit
+    sepaInstant: SepaInstant
+    fedNowUsa: FedNowUSA
+}
+
+type MoneyAmount {
+    iSOCurrencyCode: ISOCurrencyCode            # Currency code
+    amount: Float                               # Amount
+    amountMaximum: MoneyAmount                  # Maximum amount
+    amountInWords: String                       # Amount in words
+}
+
+type CBDC {
+    name: String
+}
+
+type SwiftGPI {
+    name: String
+}
+
+type SwiftISO20022 {
+    name: String
+}
+
+type BricsPlus {
+    name: String
+}
+
+type BricsPay {
+    name: String
+}
+
+type FasterPaymentsUK {
+    name: String
+}
+
+type SepaCredit {
+    name: String
+}
+
+type SepaInstant {
+    name: String
+}
+
+type FedNowUSA {
+    name: String
+}
+
+## Identity
+
+type Member {
+    id: ID						# Member identifier
+    companyName: String				 # Company name
+    havonaMemberRole: [HavonaMemberRole]
+    urdttMemberRole: [URDTTMemberRole]
+    collaborators: [MemberCollaborator]
+    companyInformation: CompanyInformation
+    contactDetails: String @search(by: [exact])
+    memberPublicKey: String! @search(by: [exact])
+    DLTPublicKey: String
+    renew: String
+    certificate: String
+    registrationStatus: String
+}
+
+type CompanyInformation {
+    lei: LEIRecord ## --- tab1
+    lou: LOU
+    name: String
+    address: Address
+    status: String
+    ubo: String
+    incorporationDate: DateTime
+    nameOfRegistry: String
+    countryOfRegistry: UNCountryCode
+    companyType: String
+    sicIndustry: String
+    codeIndustry: String ## --- ownership tab
+    companyOfficers: [MemberCollaborator]
+    shareholders: [MemberCollaborator]
+    taxReference1 :String ## --- tax tab
+    taxReference2 :String
+    DLTPublicKey :String ## DLT network
+    companyPublicKey :String
+    memberContactDetails :String ## people and collaborators
+}
+
+type MemberCollaborator {
+    id: ID # generated
+ 		role: CollaboratorRole!
+    member: Member # required
+    firstName: String # required
+    lastName: String # required
+    dataOfBirth: String
+  	department: [Department] # required
+  	jobFunction: String
+    email: String # required
+    middleNames: String
+    driversLicenseNumber: String
+    passportNumber: String
+    nationalIdNumber: String
+    socialSecurityNumber: String
+    telephone: String
+    addressBusiness: Member
+    addressPersonal: Member
+    DLTPublicKey: String
+    companyPublicKey: String
+    signature: String
+    signatureStamp: FreeForm
+}
+
+type PrincipleParties {
+    buyer: Member
+    buyerFSP: Member
+    seller: Member
+    sellerFSP: Member
+}
+
+type PrinciplePaymentParties {
+    obligorPrincipleParty: Member #buyer
+    obligorFSP: Member
+    beneficiaryPrincipleParty: Member #seller
+    beneficiaryFSP: Member
+    finalBeneficiary: Member
+    chequePayableTo: Member
+}
+
+type LOU {
+    prefix: String
+}
+
+type LEIRecord {
+    lei: String
+    legalName: String
+    legalAddress: Address
+    headquartersAddress: Address
+    registrationAuthority: RegistrationAuthority
+    legalJurisdiction: String
+    entityCategory: String
+    legalForm: LegalForm
+    entityStatus: String
+    entityCreationDate: DateTime
+    registration: Registration
+    geocoding: Geocoding
+}
+
+## Legal
+
+type Registration {
+    initialRegistrationDate: DateTime
+    lastUpdateDate: DateTime
+    registrationStatus: String
+    nextRenewalDate: DateTime
+    managingLOU: String
+    validationSources: String
+    validationAuthority: RegistrationAuthority
+}
+
+type RegistrationAuthority {
+    registrationAuthorityID: String
+    registrationAuthorityEntityID: String
+}
+
+type LegalForm {
+    entityLegalFormCode: String
+}
+
+type Insurance {
+    insurance: String
+    quote: String
+    cost: Int
+}
+
+type HSCodes {
+    hsCodeFull:Int #6 digits MAX
+    hsChapter: Int #2 digits MAX
+    hsHeading:Int #2 digits MAX
+    hsSubHeading: Int #2 digits MAX
+    cnSubHeading: Int #2 digits MAX
+    taricSubHeading: Int #2 digits MAX
+    euTaricCode: Int #2 digits MAX
+    hsCodeGoodsDescription: String # Data out from API
+    goodsDescription: ProductGoods # Data in from Havona platform
+    qualityWeightConditions: ProductGoods # Data in from Havona platform
+}
+
+type ShippingLocation {
+    location :Location
+    locationName :String
+    latitude :Int
+    longitude :Int
+    UNLocationCode :String
+    address :Address
+    displayedName :String
+    locationType: UNLocationCodeTypePortsOther
+}
+
+type GoodsDelivery {
+    transports: Transports
+    partialShipment :Boolean
+    transhipment :Boolean
+    demurrageDetention :Member
+    rules :String
+    packaging :String
+    deliveryBasis :String
+    uNLocationCodeTypePortsOther: UNLocationCodeTypePortsOther
+    latestShipmentDate: DateTime
+    latestDeliveryDate: DateTime
+}
+
+type Geocoding {
+    original_address: String
+    relevance: Float
+    match_type: String
+    lat: String
+    lng: String
+    geocoding_date: DateTime
+    bounding_box: String
+    match_level: String
+    formatted_address: String
+    mapped_location_id: String
+    mapped_street: String
+    mapped_housenumber: String
+    mapped_postalcode: String
+    mapped_city: String
+    mapped_district: String
+    mapped_state: String
+    mapped_country: String
+}
+
+## Interfaces
+
+interface ElectronicRecord {
+    id: ID                                     # Unique identifier
+    dtt: DigitalTradeTransaction                # Digital trade transaction
+    file: FreeForm                              # File content
+    signatures: [Signature]                     # Signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal]  # Document seals
+}
+
+## Measurement
+
+type GeneralConditions {
+    periodOfPresentation :Period
+    generalConditions :FreeForm
+    otherConditions :FreeForm
+    confidentiality :FreeForm
+    other :FreeForm
+}
+
+type Period {
+    pointintime: DateTime
+    numdays: Int
+    numweeks: Int
+}
+
+type UnitMeasurements {
+    amount: MoneyAmount
+    currency: Currency
+    unitPrice :Float
+    totalPrice :Float
+    unitsValue: MoneyAmount
+    totalValue: MoneyAmount
+    totalNetWeightKG: Int
+    quantityPerMeasurement :Int
+    quantityWeight:Int
+    totalNetWeight :String
+    weightUnit: WeightUnit
+    volumeUnit : VolumeUnit
+    weight :Int
+    volume :Int
+    totalGrossWeightKG: Int
+    totalNumberOfBags: Int
+    totalNumberOfContainers: Int
+    totalQuantityLoadedTonnes: Int
+    unitNetWeightBagsKg: Int
+    unitGrossWeightBagsKg: Int
+    cargoGrossWeightUnit :WeightUnit
+    cargoGrossWeight :Int
+    tareWeight:Int
+}
+
+## Misc
+
+type FreeForm {
+    blob: String
+}
+
+# Havona Schema
+directive @length(max: Int!) on FIELD_DEFINITION
+directive @ledger on FIELD_DEFINITION
+directive @offledger on FIELD_DEFINITION
+
+
+type Parent {
+    id: String! @id
+    name: String
+    child: Child
+}
+
+type Child {
+    id: String! @id
+    age: Int
+    parent: Parent
+}
+
+########### Electronic Records ###########
+
+type ProFormaInvoice implements ElectronicRecord {
+    id :ID
+    dtt: DigitalTradeTransaction
+    tradeContract: TradeContract
+    file: FreeForm
+    creationDate: DateTime
+    declaration: FreeForm
+    uNECEDocumentCodes: UNECEDocumentCodes
+    customsLoading: Member
+    customsDestination: Member
+    shippersDetails: Member
+    productDescription: ProductGoods
+    reasonForExport: FreeForm
+    collectionAddress: Address
+    deliveryAddress: Address
+    signatures: [Signature]
+    postTradeDocumentSeals: [PostTradeDocumentSeal]
+  	fieldStatuses: [FieldStatus] # Tracks current field status
+  	fieldHistories: [FieldHistory] # Tracks changes over time
+}
+
+type CommercialInvoice implements ElectronicRecord {
+    id: ID # Document: Invoice Number
+    dtt: DigitalTradeTransaction # Document: Documents Remitted, Contract Number
+    invoiceDate: DateTime # Date: Date Type (invoice date, B/L date, payment due date)
+    lastModifiedDate: DateTime
+    TradeContract: TradeContract # Document: Buyer Contract, Sales Order Number, Customer Order Number
+    file: FreeForm
+    uNECEDocumentCodes: UNECEDocumentCodes
+    buyer: Member # Party: Entity Type (Seller, Buyer, End Customer, Applicant of the Letter of Credit); Entity
+    seller: Member # Party: Bill to (entity type), Seller's signatory
+    transportDocReference: TransportDocumentEBL # Transport: Loading Port; Discharge Port; Vessel Name
+    transports: Transports
+    carrierBookingRef: ShippingInstructionEBL
+    unDocumentCodes: UNECEDocumentCodes
+    productGoods: ProductGoods # Goods: H.S. Number; Product; Measure: Quantity; Unit of Measurement, Moisture; Location: Country of Origin
+    otherInvoiceItems: FreeForm
+    paymentTerms: PaymentTerms # Terms: Incoterm; Payment Term; Payment Method; Banking: Bank details #ex-payment
+    isAdvancedPayment: Boolean
+    advancedPaymentAmount: MoneyAmount # Amount: Unit Price; Tax Amount; Exchange Rate, Credit Amount, Total Amount
+    totalAmountDue: MoneyAmount
+    signatures: [Signature]
+    postTradeDocumentSeals: [PostTradeDocumentSeal]
+  	fieldStatuses: [FieldStatus] # Tracks current field status
+  	fieldHistories: [FieldHistory] # Tracks changes over time
+}
+
+type ShippingInstructionEBL implements ElectronicRecord {
+    id: ID
+    file: FreeForm
+    uNECEDocumentCodes: UNECEDocumentCodes
+    dtt: DigitalTradeTransaction
+    shippingInstructionReference:String
+    documentStatus: ShippingInstructionDocumentStatus
+    transportDocumentTypeCode: ShippingInstructionTransportDocumentTypeCode
+    shippingInstructionCreatedDateTime: DateTime
+    shippingInstructionUpdatedDateTime: DateTime
+    amendToTransportDocument: String
+    isShippedOnBoardType: Boolean
+    numberOfCopiesWithCharges: Int
+    numberOfCopiesWithoutCharges: Int
+    numberOfOriginalsWithCharges: Int
+    numberOfOriginalsWithoutCharges: Int
+    isElectronic: Boolean
+    isToOrder: Boolean
+    displayedNameForPlaceOfReceipt: String
+    displayedNameForPortOfLoad:String
+    displayedNameForPortOfDischarge: String
+    displayedNameForPlaceOfDelivery: String
+    carrierBookingReferences: String
+    signatures: [Signature]
+    postTradeDocumentSeals: [PostTradeDocumentSeal]
+ 		fieldStatuses: [FieldStatus] # Tracks current field status
+  	fieldHistories: [FieldHistory] # Tracks changes over time
+}
+
+type NegotiableInstrumentConfig {
+    id: ID                                      # Identifier
+    isNegotiable: Boolean                       # Negotiable indicator
+    isElectronic: Boolean                       # Electronic indicator
+    bearerIfNegotiableTrue: Member              # Bearer if negotiable
+    favourIfNegotiableFalse: Member             # Favor if not negotiable
+    issuer: Member                              # Issuer
+    amount: MoneyAmount                         # Amount
+    dateIssued: DateTime                        # Issue date
+    dateMature: DateTime                        # Maturity date
+    terms: String                               # Terms
+    jurisdiction: DigitalTradeLawJurisdiction   # Jurisdiction
+    signatures: [Signature]                     # Signatures
+    referenceNumber: String                     # Reference number
+    status: String                              # Status
+}
+
+type CustomsGoodsDeclaration {
+    id: String! @id @search(by: [hash])
+    dtt: DigitalTradeTransaction
+    conveyanceRefNumber: String @search(by: [exact])
+    invoiceNumber: String @search(by: [exact])
+    previousDocumentNumber: String
+    officeOfDeclaration: String
+    submitter: Member
+    agentExporterImporter: Member
+    carrierIdentification: TransportDocumentEBL
+    supplier: Member
+    warehouse: WarehouseReceipt
+    locationOfGoods: Location
+    transportDocumentIssuePlace: TransportDocumentEBL
+    countryOfOrigin: UNCountryCode
+    totalNumberOfItems: Int
+    deliveryDestination: UNLocationCode
+    officeOfExit: String
+    countryOfExportation: UNCountryCode
+    itemLevelInformation: String
+    descriptionOfGoods: ProductGoods
+    commodityClassification: String
+    numberOfPackages: TransportDocumentEBL
+    typeOfPackagesIdentification: String
+    totalGrossWeight: Float
+    totalNumberOfPackages: CargoItem
+    transportDocumentIssueDate: TransportDocumentEBL
+    dateOfArrivalAtPlaceOfDischarge: TransportDocumentEBL
+    invoiceData: CommercialInvoice #+ ProForma Invoice Invoice interface is required here Eric
+    typeOfMeansOfTransportAtArrival: TransportDocumentEBL
+    identificationOfMeansOfTransportCrossingBorder: TransportDocumentEBL
+    typeOfMeansOfTransportCrossingBorder: TransportDocumentEBL
+    typeOfMeansOfTransportAtDeparture: TransportDocumentEBL
+    transportEquipmentLoadedStatus: TransportDocumentEBL
+    shippingMarks: TransportDocumentEBL
+    termsOfPaymentCode: PaymentTermsCode
+    totalInvoiceAmount: CommercialInvoice #+ ProForma Invoice Invoice interface is required here Eric
+    customsValue: Float
+    statisticalValue: Float
+    equipmentIdentificationNumber: TransportDocumentEBL
+    seal: String
+    dutyTaxFeeTypeHeaderLevel: String
+    dutyTaxPaymentMethod: String
+    dutyTaxFeeAssessed: Float
+    charges: Float
+    valuationMethod: String
+    typeOfDutyRegime: String
+    tariffQuantitySupplementaryQuantity: Float
+  	fieldStatuses: [FieldStatus] # Tracks current field status
+  	fieldHistories: [FieldHistory] # Tracks changes over time
+}
+
+type EMIR_REFIT {
+  counterparty: [Member]
+  uniqueProductIdentifier: String
+  uniqueTradeIdentifier: String
+  optionsRelatedFields: String
+}
+
+############# Identity #############
+
+type PartyReference {
+    partyReference: String
+}
+
+############# Letter Of Credit #############
+type LetterOfCredit implements ElectronicRecord {
+    id: ID
+    dtt: DigitalTradeTransaction
+    file: FreeForm
+    letterOfCreditName: FreeForm
+    fspId: String
+    otherLCId :String
+    uNECEDocumentCodes: UNECEDocumentCodes
+    principleParties: PrincipleParties
+    paymentParties: Member
+    payment: PaymentTerms
+    isStandbyLC: Boolean
+    partialDrawings :Boolean
+    productGoods: ProductGoods
+    goodsDelivery: GoodsDelivery
+    specialClauses: LCSpecialClause
+    lcType: LcCreditTerms
+    termsAndConditions: FreeForm
+    additionalConditions: FreeForm
+    confirmationInstructions: FreeForm
+    signatures: [Signature]
+    postTradeDocumentSeals: [PostTradeDocumentSeal]
+    negotiableInstrumentConfig: NegotiableInstrumentConfig
+  	fieldStatuses: [FieldStatus] # Tracks current field status
+  	fieldHistories: [FieldHistory] # Tracks changes over time
+}
+
+type LcSummary {
+    lcSummary: String
+}
+
+type LcCreditTerms {
+    percentageCreditAmountTolerance: Int
+    creditAvailableWith: Member
+    creditAvailableBy: DateTime
+    dateOfIssueOfCredit :DateTime
+    dateAndPlaceOfExpiry :DateTime
+    moneyAmount: MoneyAmount
+    coveringRelatingTo :String
+    periodOfPresentations :String
+    confirmationsInstructions :String
+    fxTerms: String
+    letterOfCreditRevocationType : LetterOfCreditRevocationType
+    letterOfCreditConfirmationType : LetterOfCreditConfirmationType
+    letterOfCreditTransferableType : LetterOfCreditTransferableType
+    letterOfCreditNegotiableType : LetterOfCreditNegotiableType
+    letterOfCreditTermSightType : LetterOfCreditTermSightType
+    letterOfCreditRestrictedType : LetterOfCreditRestrictedType
+}
+
+type LcCreditParties {
+    applicant: PrincipleParties
+    beneficiary: PrincipleParties
+    issuingAdvisingBank :Member
+    confirmingBank :Member
+    nominatedBank :Member
+    prevConfirmingBank :Member
+}
+
+type LcEvergreenOption {
+    evergreenOption: String
+}
+
+type InspectionClause implements LCSpecialClause {
+    inspectionParty: String
+    inspectionLocation: String
+    clauseType: String
+}
+
+type TransshipmentClause implements LCSpecialClause {
+    allowedTransshipments: Int
+    clauseType: String
+}
+
+type ForceMajeureClause implements LCSpecialClause {
+    definedEvents: [String]
+    clauseType: String
+}
+
+type PartialShipmentsClause implements LCSpecialClause {
+    allowedPartialShipments: Int
+    clauseType: String
+}
+
+type RedClause implements LCSpecialClause {
+    advanceAmount: Float
+    clauseType: String
+}
+
+type GreenClause implements LCSpecialClause {
+    advanceAmount: Float
+    storageLocation: String
+    clauseType: String
+}
+
+type Bank {
+    bankName: String
+    bankDetails: String
+}
+
+type Charges {
+    partyPaying: String
+    amount: MoneyAmount
+}
+
+type DocumentDetails {
+    documentType: String
+    documentDescription: String
+}
+
+type ShipmentDetails {
+    shipmentType: String
+    shipmentDescription: String
+    partialShipment: Boolean
+    transshipment: Boolean
+}
+
+type BankGuarantee implements ElectronicRecord {
+    id :ID
+    dtt: DigitalTradeTransaction
+    file: FreeForm
+    uNECEDocumentCodes: UNECEDocumentCodes
+    guaranteeNumber: String
+    applicant: Member
+    beneficiary: Member
+    issuingBank: Member
+    amount: MoneyAmount
+    issueDate: DateTime
+    expiryDate: DateTime
+    termsAndConditions: String
+    signatures: [Signature]
+    postTradeDocumentSeals: [PostTradeDocumentSeal]
+  	fieldStatuses: [FieldStatus] # Tracks current field status
+  	fieldHistories: [FieldHistory] # Tracks changes over time
+}
+
+type SCfSupplyChainFinance {
+    noteNumber: Int
+}
+
+
+type ElectronicPaymentUndertaking {
+    id: ID
+    dtt: DigitalTradeTransaction
+    electronicBillOfExchange: EPUElectronicBillOfExchange
+    tradeFinanceInstruments: [TradeFinanceInstrument]
+    issuer: Member
+    firstHolder: Member
+    epuDetails:  EpuDetails
+    payableAt: BankAccount
+    issuerElectronicSignature: Signature
+    issuerName: String
+    issuerPosition: String
+}
+
+type EPUElectronicBillOfExchange {
+    id: ID
+    dtt: DigitalTradeTransaction
+    electronicPaymentUndertaking: ElectronicPaymentUndertaking
+    tradeFinanceInstruments: [TradeFinanceInstrument]
+    issuer: Member
+    acceptor: Member
+    firstHolder: Member
+    epuDetails:  EpuDetails
+    payableAt: BankAccount
+    issuerAndAcceptorElectronicSignatures: [Signature] @length(max: 2)
+    issuerName: String
+    issuerPosition: String
+    negotiableInstrumentConfig: NegotiableInstrumentConfig
+}
+
+type ElectronicPromissoryNote {
+    negotiableInstrumentConfig: NegotiableInstrumentConfig
+    id: ID
+    dtt: DigitalTradeTransaction
+    electronicPaymentUndertaking: ElectronicPaymentUndertaking
+    tradeFinanceInstruments: [TradeFinanceInstrument]
+    maker: Member # Person who will make the payment
+    payee: Member # Person who will receive the payment
+    holder: Member # First holder of the note, similar to 'firstHolder' in ElectronicBillOfExchange
+    epuDetails: EpuDetails
+    payableAt: BankAccount
+    makerAndPayeeElectronicSignatures: [Signature] @length(max: 2) # Assuming both maker and payee must sign
+    makerName: String
+    makerPosition: String
+}
+
+type EpuDetails {
+    epuTemplateText:  FreeForm
+    epuPrincipleAmount: MoneyAmount
+    epuApplicableCurrency: Currency
+    epuMaturityDate: DateTime
+    epuPaymentPlace: DateTime
+}
+
+
+
+
+
+type BankAccount {
+    accountNumber: Int
+    usdAchNumber: String
+    sortCode: String
+    iban: String
+}
+
+type Price {
+    amount: Float
+    currency: Currency
+}
+
+type Charge {
+    chargeType :String
+    currencyAmount: MoneyAmount
+    currencyCode :String
+    paymentTerm :PaymentTerm
+    calculationBasis :String
+    unitPrice: Price
+    quantity: MoneyAmount
+}
+
+type TransportMemberDCSA {
+    party :Member
+    partyName :Member
+    taxReference1 :String
+    taxReference2 :String
+    memberPublicKey: Member
+    address :Address
+    name :String
+    street :String
+    streetNumber :String
+    floor :String
+    postCode :String
+    city :String
+    stateRegion :String
+    nmftaCode :NMFTACode
+    partyFunction :String
+    displayedAddress :Address
+    partyContactDetails :String
+    isToBeNotified: Boolean
+}
+
+type UtilizedTransportEquipments {
+    equipment :Equipment
+    cargoGrossWeightUnit :String
+    cargoGrossWeight :Int
+    activeReeferSettings : ActiveReeferSettings
+    seals: [Seal]
+}
+
+
+
+
+
+type CargoItem {
+    cargoLineItems: CargoLineItem
+    cargoLineItemID :String
+    shippingMarks :String
+    carrierBookingReference :String
+    descriptionOfGoods :String
+    HSCODE :String
+    weight :Int
+    volume :Int
+    weightUnit :String
+    volumeUnit :String
+    numberOfPackages :Int
+    packageCode :String
+    equipmentReference :String
+}
+
+type CargoLineItem {
+    cargoLineItemId: ID
+    shippingMarks: String
+}
+
+type MemberSpecified {
+    memberprovideddetails: String
+}
+
+type ExtraContractCondition {
+    TODO: String
+}
+
+type Commodity {
+    name: String
+    origin :String
+    crop: String
+    quantity :Int
+    Colour: Int
+}
+
+type PackingList implements ElectronicRecord {
+    id: ID
+    dtt: DigitalTradeTransaction
+    file: FreeForm
+    blNumber: TransportDocumentEBL
+    packingDescription: String
+    uNECEDocumentCodes: UNECEDocumentCodes
+    transports: Transports
+    unitMeasurements: UnitMeasurements
+    items: ProductGoods
+    bagMarks: String
+    taxable: Boolean,
+    signatures: [Signature]
+    postTradeDocumentSeals: [PostTradeDocumentSeal]
+}
+
+type Other {
+    misc: String
+}
+
+type Loan {
+    creditors: Member
+    debtor: Member
+    obligor: Member
+    dateIssued: DateTime
+    loanStart: DateTime
+    loanEnd: DateTime
+    termLengthDays: Int
+    loanType: LoanType
+    loanCurrencies: ISOCurrencyCode
+    amount: MoneyAmount
+}
+
+type DocumentaryInstructions {
+    invoice : CommercialInvoice
+    shippers: [Member]
+    consignee: Member
+    marked: String
+    loadPort: Location
+    dischargePort: Location
+    certOfOrigin: CertificateOfOrigin
+    certOfWeightQualityPackaging: CertificateWeightQualityPackaging
+    quality: QualitySpecification
+}
+
+######### Warehouse Receipt #########
+type WarehouseReceipt implements ElectronicRecord {
+    signatures: [Signature]
+    id: ID
+    dtt: DigitalTradeTransaction
+    file: FreeForm
+    isFungible: Boolean
+    coMingleIsAllowed: Boolean
+    goodsSupplier: Member
+    goodsDepositor: Member
+    depositorSpecialInstructions: FreeForm
+    warehouseKeeper: Member
+    warehouseOperator:Member
+    locationAddressOfGoods: Location
+    insuredBy: Member
+    insurer: Member
+    uNECEDocumentCodes: UNECEDocumentCodes
+    referenceNumber: String
+    receiptNumber: String
+    lotNumber: String
+    receivedDate: DateTime
+    receivedAt: Location
+    meansOftransport: Transports
+    insurance: [WarehouseInsurance]
+    goodsDescription: ProductGoods
+    totalGrossWeight: UnitMeasurements
+    periodOfStorageFrom: DateTime
+    periodOfStorageTo: DateTime
+    storageFees: MoneyAmount
+    totalAmountDue: MoneyAmount
+    issuanceDate: DateTime
+    signatureOfIssuance: [Signature]
+    postTradeDocumentSeals: [PostTradeDocumentSeal]
+  	fieldStatuses: [FieldStatus] # Tracks current field status
+  	fieldHistories: [FieldHistory] # Tracks changes over time
+}
+
+type WarehouseInsurance {
+    todo: String
+}
+
+type WarehouseReceiptConfig {
+    isFungible: Boolean
+    coMingleIsAllowed: Boolean
+    isNegotiable: Boolean
+    isElectronic: Boolean
+    depositorSpecialInstructions:FreeForm
+}
+
+type WarehouseReceiptParties {
+    owner: Member
+    receivedBy: Member
+    receivedFrom: Member
+    forAccount: Member
+    bearerIfNegotiableTrue: Member
+    favourIfNegotiableFalse: Member
+    chequePayableTo: Member
+    warehouseAgent: Member
+    nameOfWarehouseManager: MemberCollaborator
+    insurer: Member
+}
+
+type CargoInsuranceCertificate {
+    id: ID # Document Identifier
+    certificateNumber: String # Certificate or policy number/reference number
+    insuredName: Member # Entity that is covered by the insurance
+    issuingCompany: Member # Insurance company issuing the certificate
+    claimsAgent: Member # Agent responsible for claims at the destination port
+    notifyParty: Member # Party to notify in case of any incidents
+    insuranceTerms: String # Detailed terms and conditions
+    coverAmount: Float # Amount covered by the insurance
+    currency: String # Currency of the covered amount
+    premium: Float # Premium for the insurance
+  	fieldStatuses: [FieldStatus] # Tracks current field status
+  	fieldHistories: [FieldHistory] # Tracks changes over time
+}
+
+type CreditInsuranceCertificate {
+    id: ID # Document Identifier
+    policyNumber: String # Policy Number or Reference Number
+    insuredEntity: Member # Entity that is covered by the credit insurance
+    issuingInsuranceCompany: Member! # Insurance company issuing the certificate
+    beneficiary: Member # Entity which will benefit from the policy, typically the lender
+    notifyParty: Member # Party to notify immediately in case of an insurable event
+    termsAndConditions: String! # Detailed terms and conditions of the insurance
+    coverAmount: Float # Amount of credit covered by the insurance
+    currency: String # Currency in which the cover amount is denominated
+    premium: Float # Premium for the credit insurance
+    effectiveDate: DateTime! # Effective date of the policy
+    expiryDate: DateTime # Expiry date of the policy
+  	fieldStatuses: [FieldStatus] # Tracks current field status
+  	fieldHistories: [FieldHistory] # Tracks changes over time
+}
+
+######### Payment Types #########
+
+
+type PaymentConfirmation {
+    paymentDetails: PaymentTerms
+    clientReference: String
+    invoiceDetails: CommercialInvoice
+}
+
+
+
+type StockItem {
+    ovrShrt: String
+    stockCode: String
+    lotControl: String
+    unitNumber: String
+    condition: Condition
+    weightKG: Int
+    chargeTypePer: String
+    rate: Float
+    amount: Float
+    currency: Currency
+}
+
+
+
+
+
+type Officer {
+    id: ID
+    name: String
+    member: Member
+    address: Address
+    dataOfBirth: String
+    memberCollaboratorIdType: MemberCollaboratorIdType
+    passportNumber: String
+    collaboratorType: [CollaboratorRole]
+    provenanceuri: String
+    nationality: String,
+    countryofresidence: String
+    occupation: String
+}
+
+type Shareholder {
+    id: ID
+    name: String
+    member: Member
+    address: Address
+    dataOfBirth: String
+    memberCollaboratorIdType: MemberCollaboratorIdType
+    passportNumber: MemberCollaborator
+    collaboratorType: [CollaboratorRole]
+    level: Int
+    owned: Member
+    company: Member
+    ownership: Float
+    votingrights: Float
+    notifiedondate: DateTime
+    provenanceuri: String
+    rightspercentage: VotingRightsPercentage
+    sharepercentage: SharePercentage
+}
+
+type VotingRightsPercentage {
+    max: Float
+    min: Float
+}
+
+type SharePercentage {
+    max: Float
+    min: Float
+}
+
+type ImageObject {
+    data: FreeForm
+}
+
+
+
+type Shipment {
+    details: String
+    partial: Boolean
+    date: DateTime
+    transhipment: Boolean
+    to: Location
+    from: Location
+    electronicRecordsRequired: ElectronicRecord
+}
+
+type GoodsDescription {
+    goodsDescriptionFreeForm: FreeForm
+}
+
+type QualityWeightConditions {
+    qualityWeightConditions: FreeForm
+}
+
+type CertificateOfAnalysis {
+    id: ID
+    tradeContract :TradeContract
+    certificateNumber :String
+    surveyorReference :String
+    nameofVessel :String
+    portOfLoading: Location!
+    portOfDischarge: Location!
+    packingDescription :String
+    totalNetWeight :String
+    totalGrossWeight :String
+    totalNumberofBags :String
+    totalNumberofContainers :String
+    goodsDescription :String
+    bLNumberandShipmentDate :DateTime
+    surveyorCertifyingText :String
+    analysistext :String
+    actualSpecificationsresultsoftheGoods :String
+    fitforhumanconsumption :String
+    signatureStamp: MemberCollaborator
+    blNumber: Int
+    shippingDate: DateTime
+    polarizationDegrees: Int
+    moisturePercent: Int
+    ashPercent: Int
+    colourICUSA: Int
+}
+
+type CertContainerCleanliness {
+    id: ID
+    type: String
+    nameOfVessel: String!
+    portOfLoading: Location!
+    portOfDischarge: Location!
+    totalNewWeightKG: Int
+    totalGrossWeightKG: Int
+    totalNumberOfBags: Int
+    totalNumberOfContainers: Int
+    packingDescription: String
+    blNumber: Int
+    shippingDate: DateTime
+    items: Item
+}
+
+type CertificateOfOrigin implements ElectronicRecord {
+    id: ID
+    file: FreeForm
+    TradeContract:TradeContract
+    dtt: DigitalTradeTransaction
+    exportInvoiceNumber: String
+    exportInvoiceDate: DateTime
+    certOfOriginNumber: String
+    letterOfCreditNumber: String
+    isElectronicCertOfOrigin: Boolean
+    issuedByChamber: Boolean
+    chamberOfCommerce: Member
+    issuedBySurveyor: Boolean
+    surveyor: Member
+    uNECEDocumentCodes: UNECEDocumentCodes
+    electronicRecordType: ElectronicRecordType
+    exporterSeller: Member
+    consignee: Member
+    buyer: Member #If not consignee
+    modeOfTransport: TransportMode
+    carrierVoyageNumber: TransportDocumentEBL
+    nameOfVessel: PackingList
+    vesselIMONumber: TransportDocumentEBL
+    portOfLoading: TransportDocumentEBL
+    portOfDischarge: TransportDocumentEBL
+    totalNewWeightKG: PackingList
+    totalGrossWeightKG: PackingList
+    totalNumberOfBags: PackingList
+    totalNumberOfContainers: PackingList
+    goodsDescription: FreeForm
+    packingDescription: String
+    bagMarks: PackingList
+    item: Item
+    taxable: PackingList
+    tariffCode: ProductGoods
+    certIssuerDeclaration: FreeForm
+    certIssuerSignature: Signature
+    originCountry: ProductGoods
+    exporterSignature: Signature
+    documentStatus: DocumentStatus
+    signatures: [Signature]
+    postTradeDocumentSeals: [PostTradeDocumentSeal]
+  	fieldStatuses: [FieldStatus] # Tracks current field status
+  	fieldHistories: [FieldHistory] # Tracks changes over time
+}
+
+type CertificateOfWeight {
+    data: String
+}
+
+type CertificateWeightQualityPackaging {
+    id: ID
+    nameOfVessel: String!
+    portOfLoading: Location!
+    portOfDischarge: Location!
+    totalNewWeightKG: Int
+    totalGrossWeightKG: Int
+    totalNumberOfBags: Int
+    totalNumberOfContainers: Int
+    goodsDescription: String
+    blNumber: Int
+    shippingDate: DateTime
+    polarizationDegrees: Int
+    moisturePercent: Int
+    ashPercent: Int
+    colourICUMSA: Int
+    dateOfProductGoodsion: DateTime
+    dateOfExpiry: DateTime
+    totalQuantityLoadedTonnes: Int
+    totalNumberBagsLoaded: Int
+    unitNetWeightBagsKg: Int
+    unitGrossWeightBagsKg: Int
+    totalTareTonnes: Int
+  	fieldStatuses: [FieldStatus] # Tracks current field status
+  	fieldHistories: [FieldHistory] # Tracks changes over time
+}
+
+type CertSanitary {
+    id: ID
+    type: String
+    nameOfVessel: String!
+    portOfLoading: Location!
+    portOfDischarge: Location!
+    totalNewWeightKG: Int
+    totalGrossWeightKG: Int
+    totalNumberOfBags: Int
+    totalNumberOfContainers: Int
+    packingDescription: String
+    goodsDescription: String
+    blNumber: Int
+    shippingDate: DateTime
+    items: Item
+  	fieldStatuses: [FieldStatus] # Tracks current field status
+  	fieldHistories: [FieldHistory] # Tracks changes over time
+}
+
+type EUIntrastat {
+    id: ID
+    file: FreeForm
+    dtt: DigitalTradeTransaction
+    principleParties: PrincipleParties
+    postTradeDocumentSeal: [PostTradeDocumentSeal]
+    signatures: [Signature]
+    uNECEDocumentCodes: UNECEDocumentCodes
+    intrastatId: String
+    referencePeriod: Period
+    loadingPort: Location
+    dischargePort: Location
+    countryOfOrigin: UNCountryCode
+    commodity: HSCodes
+    value: MoneyAmount
+    quantity: Int
+    partnerMemberState: UNCountryCode
+    natureOfTransaction: FreeForm
+}
+
+type PhytoSanitaryCertificate {
+    data: String
+}
+
+type Quantity {
+    amountint: Int
+    amountfloat: Float
+}
+
+type Item {
+    name:  String
+    amount: Int
+}
+
+type ContentHeader {
+    contentDate: DateTime
+    fileContent: String
+    recordCount: Int
+}
+######## FIELD STATUS ########
+
+type FieldStatus {
+    fieldName: String                           # Field name
+    buyerValue: String                          # Buyer value
+    sellerValue: String                         # Seller value
+    status: StatusEnum                          # Status
+}
+
+type FieldHistory {
+    fieldName: String                           # Field name
+    changes: [FieldChange]                      # Changes
+}
+
+type FieldChange {
+    timestamp: DateTime                         # Timestamp
+    oldValue: String                            # Old value
+    newValue: String                            # New value
+    updatedByMember: Member                     # Updated by member
+    updatedByMemberCollaborator: MemberCollaborator  # Updated by collaborator
+}
+
+
+type BillOfLading implements ElectronicRecord {
+    id: ID!                                     # Unique identifier
+    file: FreeForm                              # File content
+    dtt: DigitalTradeTransaction                # Digital trade transaction
+    uNECEDocumentCodes: UNECEDocumentCodes      # UN ECE document codes
+    details: String                             # Bill of lading details
+    signatures: [Signature]                     # Signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal]  # Document seals
+    fieldStatuses: [FieldStatus]                # Field statuses
+    fieldHistories: [FieldHistory]              # Field histories
+}
+
+
+type OriginChargesPaymentTerm {
+    haulageChargesPaymentTermCode: String       # PRE or COL
+    portChargesPaymentTermCode: String          # PRE or COL
+    otherChargesPaymentTermCode: String         # PRE or COL
+}
+
+type DestinationChargesPaymentTerm {
+    haulageChargesPaymentTermCode: String       # PRE or COL
+    portChargesPaymentTermCode: String          # PRE or COL
+    otherChargesPaymentTermCode: String         # PRE or COL
+}
+
+type TransportDocumentEBL implements ElectronicRecord {
+    id: ID!                                     # Unique identifier
+    dtt: DigitalTradeTransaction                # Parent transaction
+    file: FreeForm                              # Document content
+    
+    # Document Identification
+    transportDocumentReference: String          # Unique number allocated by shipping line
+    transportDocumentSubReference: String       # Additional reference for version identification
+    shippingInstructionsReference: String       # Reference to shipping instructions
+    
+    # Document Type and Status
+    transportDocumentStatus: String             # DRAFT, APPROVED, ISSUED, etc.
+    transportDocumentTypeCode: String           # BOL or SWB
+    isShippedOnBoardType: Boolean               # If shipped onboard or received for shipment
+    isElectronic: Boolean                       # If electronically transferred
+    isToOrder: Boolean                          # If negotiable (must be false for SWB)
+    
+    # Document Copies and Originals
+    numberOfCopiesWithCharges: Int              # Number of copies with charges
+    numberOfCopiesWithoutCharges: Int           # Number of copies without charges
+    numberOfOriginalsWithCharges: Int           # Number of originals with charges
+    numberOfOriginalsWithoutCharges: Int        # Number of originals without charges
+    
+    # Payment Terms
+    freightPaymentTermCode: String              # PRE (Prepaid) or COL (Collect)
+    originChargesPaymentTerm: OriginChargesPaymentTerm      # Origin charges payment terms
+    destinationChargesPaymentTerm: DestinationChargesPaymentTerm  # Destination charges
+    invoicePayableAt: Location                  # Where invoice is payable
+    
+    # Location Displays (for Letter of Credit)
+    displayedNameForPlaceOfReceipt: [String]    # Display name for receipt place
+    displayedNameForPortOfLoad: [String]        # Display name for load port
+    displayedNameForPortOfDischarge: [String]   # Display name for discharge port
+    displayedNameForPlaceOfDelivery: [String]   # Display name for delivery place
+    
+    # Key Dates
+    issueDate: DateTime                         # When document was issued
+    shippedOnBoardDate: DateTime                # When cargo was loaded on vessel
+    receivedForShipmentDate: DateTime           # When cargo was received for shipment
+    
+    # Carrier Information
+    carrierCode: String                         # SCAC or SMDG code of carrier
+    carrierCodeListProvider: String             # SMDG or NMFTA
+    displayedShippedOnBoardReceivedForShipment: String  # Evidence text of receipt
+    
+    # Service Information
+    serviceContractReference: String            # Service contract reference
+    contractQuotationReference: String          # Contract or quotation reference
+    
+    # Value and Currency
+    declaredValue: Float                        # Value declared by shipper
+    declaredValueCurrency: String               # Currency for declared value
+    
+    # Document Properties
+    termsAndConditions: String                  # Terms and conditions
+    receiptTypeAtOrigin: String                 # CY, SD, or CFS
+    deliveryTypeAtDestination: String           # CY, SD, or CFS
+    cargoMovementTypeAtOrigin: String           # FCL or LCL
+    cargoMovementTypeAtDestination: String      # FCL or LCL
+    numberOfRiderPages: Int                     # Additional pages for goods description
+    
+    # Linked Information
+    placeOfIssue: Location                      # Where document was issued
+    transports: Transports                      # Transport details
+    charges: [Charge]                           # Applicable charges
+    carrierClauses: [Clause]                    # Document clauses
+    partyContactDetails: [PartyContactDetail]   # Contact information
+    documentParties: DocumentParties            # Parties to the document
+    consignmentItems: [ConsignmentItem]         # Consignment items
+    utilizedTransportEquipments: [UtilizedTransportEquipment]  # Equipment used
+    exportLicense: ExportLicense                # Export license details
+    importLicense: ImportLicense                # Import license details
+    references: [Reference]                     # References
+    customsReferences: [CustomsReference]       # Customs references
+    
+    # Digital Document Properties
+    signatures: [Signature]                     # Digital signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal]  # Document integrity seals
+    fieldStatuses: [FieldStatus]                # Current status of fields
+    fieldHistories: [FieldHistory]              # Field change history
+    negotiableInstrumentConfig: NegotiableInstrumentConfig  # Negotiable instrument config
+}
+
+type OriginChargesPaymentTerm {
+    haulageChargesPaymentTermCode: String       # PRE or COL
+    portChargesPaymentTermCode: String          # PRE or COL
+    otherChargesPaymentTermCode: String         # PRE or COL
+}
+
+type DestinationChargesPaymentTerm {
+    haulageChargesPaymentTermCode: String       # PRE or COL
+    portChargesPaymentTermCode: String          # PRE or COL
+    otherChargesPaymentTermCode: String         # PRE or COL
+}
+
+type Location {
+    locationName: String                         # Name of location
+    UNLocationCode: String                       # UN Location code
+    countryCode: String                          # Country code
+    address: Address                             # Address details
+    facility: Facility                           # Facility information
+    geoCoordinate: GeoCoordinate                 # Geographic coordinates
+}
+
+type Facility {
+    facilityCode: String                        # Facility code
+    facilityCodeListProvider: String            # BIC or SMDG
+}
+type GeoCoordinate {
+    latitude: String                            # Latitude
+    longitude: String                           # Longitude
+}
+
+type Address {
+    street: String                              # Street name
+    streetNumber: String                        # Street number
+    floor: String                               # Floor
+    postCode: String                            # Postal code
+    POBox: String                               # PO Box
+    city: String                                # City
+    stateRegion: String                         # State/region
+    countryCode: String                         # Country code
+}
+
+type Transports {
+    plannedArrivalDate: DateTime                # Planned arrival date
+    plannedDepartureDate: DateTime              # Planned departure date
+    preCarriageBy: String                       # Pre-carriage transport mode
+    onCarriageBy: String                        # On-carriage transport mode
+    placeOfReceipt: Location                    # Place of receipt
+    portOfLoading: Location                     # Port of loading
+    portOfDischarge: Location                   # Port of discharge
+    placeOfDelivery: Location                   # Place of delivery
+    onwardInlandRouting: Location               # Onward inland routing
+    vesselVoyages: [VesselVoyage]               # Vessel/voyages
+}
+
+type VesselVoyage {
+    vesselName: String                          # Name of vessel
+    carrierExportVoyageNumber: String           # Voyage number
+    universalExportVoyageReference: String      # Global voyage reference
+}
+
+type Charge {
+    chargeName: String                          # Description of charge
+    currencyAmount: Float                       # Monetary value
+    currencyCode: String                        # Currency code
+    paymentTermCode: String                     # Payment term code
+    calculationBasis: String                    # Measure unit for unit price
+    unitPrice: Float                            # Unit price
+    quantity: Float                             # Quantity
+}
+
+type Clause {
+    clauseContent: String                       # Content of clause
+}
+
+type PartyContactDetail {
+    name: String                                # Name of contact
+    phone: String                               # Phone number
+    email: String                               # Email address
+}
+
+type DocumentParties {
+    shipper: Party                              # Shipper details
+    consignee: Party                            # Consignee details
+    endorsee: Party                             # Endorsee details
+    issuingParty: Party                         # Issuing party
+    carriersAgentAtDestination: Party           # Carrier's agent
+    notifyParties: [NotifyParty]                # Notify parties
+    other: [OtherDocumentParty]                 # Other parties
+}
+
+type Party {
+    partyName: String                           # Name of party
+    typeOfPerson: String                        # Type of person
+    address: Address                            # Address
+    displayedAddress: [String]                  # Displayed address
+    identifyingCodes: [IdentifyingCode]         # Identifying codes
+    taxLegalReferences: [TaxLegalReference]     # Tax/legal references
+    partyContactDetails: [PartyContactDetail]   # Contact details
+    reference: String                           # Reference
+    purchaseOrderReferences: [String]           # Purchase order references
+}
+
+type NotifyParty {
+    partyName: String                           # Name of party
+    typeOfPerson: String                        # Type of person
+    address: Address                            # Address
+    displayedAddress: [String]                  # Displayed address
+    identifyingCodes: [IdentifyingCode]         # Identifying codes
+    taxLegalReferences: [TaxLegalReference]     # Tax/legal references
+    partyContactDetails: [PartyContactDetail]   # Contact details
+    reference: String                           # Reference
+}
+
+type OtherDocumentParty {
+    party: Party                                # Party details
+    partyFunction: String                       # Party function
+}
+
+type IdentifyingCode {
+    codeListProvider: String                    # Provider of code list
+    partyCode: String                           # Code identifying party
+    codeListName: String                        # Name of code list
+}
+
+type TaxLegalReference {
+    type: String                                # Reference type
+    countryCode: String                         # Country code
+    value: String                               # Reference value
+}
+
+type ConsignmentItem {
+    carrierBookingReference: String             # Booking reference
+    descriptionOfGoods: [String]                # Description of goods
+    HSCodes: [String]                           # HS codes
+    nationalCommodityCodes: [NationalCommodityCode]  # Commodity codes
+    shippingMarks: [String]                     # Shipping marks
+    cargoItems: [CargoItem]                     # Cargo items
+    exportLicense: ExportLicense                # Export license
+    importLicense: ImportLicense                # Import license
+    references: [Reference]                     # References
+    customsReferences: [CustomsReference]       # Customs references
+}
+
+type NationalCommodityCode {
+    type: String                                # Code type
+    countryCode: String                         # Country code
+    values: [String]                            # Code values
+}
+
+type CargoItem {
+    equipmentReference: String                  # Equipment reference
+    cargoGrossWeight: WeightMeasure             # Gross weight
+    cargoGrossVolume: VolumeMeasure             # Gross volume
+    cargoNetWeight: WeightMeasure               # Net weight
+    cargoNetVolume: VolumeMeasure               # Net volume
+    outerPackaging: OuterPackaging              # Outer packaging
+    exportLicense: ExportLicense                # Export license
+    importLicense: ImportLicense                # Import license
+    nationalCommodityCodes: [NationalCommodityCode]  # Commodity codes
+    customsReferences: [CustomsReference]       # Customs references
+}
+
+type WeightMeasure {
+    value: Float                                # Weight value
+    unit: String                                # Weight unit
+}
+type VolumeMeasure {
+    value: Float                                # Volume value
+    unit: String                                # Volume unit
+}
+
+type OuterPackaging {
+    packageCode: String                         # Package code
+    imoPackagingCode: String                    # IMO packaging code
+    numberOfPackages: Int                       # Number of packages
+    description: String                         # Description
+    woodDeclaration: String                     # Wood declaration
+    dangerousGoods: [DangerousGoods]            # Dangerous goods
+}
+
+type DangerousGoods {
+    UNNumber: String                            # UN dangerous goods number
+    NANumber: String                            # NA dangerous goods number
+    codedVariantList: String                    # Coded variant list
+    properShippingName: String                  # Proper shipping name
+    technicalName: String                       # Technical name
+    imoClass: String                            # IMO class
+    subsidiaryRisk1: String                     # Subsidiary risk 1
+    subsidiaryRisk2: String                     # Subsidiary risk 2
+    isMarinePollutant: Boolean                  # Marine pollutant indicator
+    packingGroup: Int                           # Packing group
+    isLimitedQuantity: Boolean                  # Limited quantity indicator
+    isExceptedQuantity: Boolean                 # Excepted quantity indicator
+    segregationGroups: [String]                 # Segregation groups
+    innerPackagings: [InnerPackaging]           # Inner packagings
+    emergencyContactDetails: EmergencyContactDetails  # Emergency contact
+    grossWeight: WeightMeasure                  # Gross weight
+    netWeight: WeightMeasure                    # Net weight
+    netExplosiveContent: WeightMeasure          # Net explosive content
+    netVolume: VolumeMeasure                    # Net volume
+    limits: DangerousGoodsLimits                # Dangerous goods limits
+}
+
+
+type InnerPackaging {
+    quantity: Int                               # Quantity
+    material: String                            # Material
+    description: String                         # Description
+}
+type EmergencyContactDetails {
+    contact: String                             # Contact name
+    provider: String                            # Provider
+    phone: String                               # Phone
+    referenceNumber: String                     # Reference number
+}
+type DangerousGoodsLimits {
+    temperatureUnit: String                     # Temperature unit
+    flashPoint: Float                           # Flash point
+    transportControlTemperature: Float          # Control temperature
+    transportEmergencyTemperature: Float        # Emergency temperature
+    SADT: Float                                 # Self-accelerating decomposition temp
+    SAPT: Float                                 # Self-accelerating polymerization temp
+}
+
+type UtilizedTransportEquipment {
+    equipment: Equipment                        # Equipment details
+    isShipperOwned: Boolean                     # Shipper owned indicator
+    isNonOperatingReefer: Boolean               # Non-operating reefer indicator
+    activeReeferSettings: ActiveReeferSettings  # Reefer settings
+    shippingMarks: [String]                     # Shipping marks
+    seals: [Seal]                               # Seals
+    references: [Reference]                     # References
+    customsReferences: [CustomsReference]       # Customs references
+}
+
+type Equipment {
+    equipmentReference: String                  # Equipment reference
+    ISOEquipmentCode: String                    # ISO equipment code
+    tareWeight: WeightMeasure                   # Tare weight
+}
+
+type ActiveReeferSettings {
+    temperatureSetpoint: Float                  # Temperature setpoint
+    temperatureUnit: String                     # Temperature unit
+    o2Setpoint: Float                           # O2 setpoint
+    co2Setpoint: Float                          # CO2 setpoint
+    humiditySetpoint: Float                     # Humidity setpoint
+    airExchangeSetpoint: Float                  # Air exchange setpoint
+    airExchangeUnit: String                     # Air exchange unit
+    isVentilationOpen: Boolean                  # Ventilation open indicator
+    isDrainholesOpen: Boolean                   # Drain holes open indicator
+    isBulbMode: Boolean                         # Bulb mode indicator
+    isColdTreatmentRequired: Boolean            # Cold treatment required indicator
+    isControlledAtmosphereRequired: Boolean     # Controlled atmosphere required indicator
+}
+type Seal {
+    number: String                              # Seal number
+    source: String                              # Seal source
+}
+type ExportLicense {
+    isRequired: Boolean                         # Required indicator
+    reference: String                           # Reference
+    issueDate: DateTime                         # Issue date
+    expiryDate: DateTime                        # Expiry date
+}
+type ImportLicense {
+    isRequired: Boolean                         # Required indicator
+    reference: String                           # Reference
+    issueDate: DateTime                         # Issue date
+    expiryDate: DateTime                        # Expiry date
+}
+
+type Reference {
+    type: String                                # Reference type
+    value: String                               # Reference value
+}
+
+type CustomsReference {
+    type: String                                # Reference type
+    countryCode: String                         # Country code
+    values: [String]                            # Reference values
+}
+
+type CreateShippingInstructionsResponse {
+    shippingInstructionsReference: String       # Unique identifier for shipping instructions
+}
+
+type CancelShippingInstructionsUpdate {
+    updatedShippingInstructionsStatus: String   # Status after update cancellation (UPDATE_CANCELLED)
+}
+
+type ApproveTransportDocument {
+    transportDocumentStatus: String             # Status after approval (APPROVED)
+}
+
+type ShippingInstructionsNotification {
+    specversion: String                         # CloudEvent spec version (1.0)
+    id: String                                  # Unique event identifier
+    source: String                              # Event source URI
+    type: String                                # Event type (org.dcsa.shipping-instructions.v3)
+    time: DateTime                              # Event timestamp
+    datacontenttype: String                     # Content type (application/json)
+    subscriptionReference: String               # Subscription reference
+    data: ShippingInstructionsData              # Event data
+}
+
+type ShippingInstructionsData {
+    shippingInstructionsStatus: String          # Status of shipping instructions
+    updatedShippingInstructionsStatus: String   # Status of latest update
+    shippingInstructionsReference: String       # Reference to shipping instructions
+    transportDocumentReference: String          # Reference to transport document
+    feedbacks: [Feedback]                       # Feedback information
+    shippingInstructions: ShippingInstructionsFull  # Complete shipping instructions
+    updatedShippingInstructions: UpdatedShippingInstructions  # Updated instructions
+}
+
+# Additional DCSA Shipping Instructions and Transport Document Schema Types
+# Complementing the existing TransportDocument schema
+
+type CreateShippingInstructionsResponse {
+    shippingInstructionsReference: String       # Unique identifier for shipping instructions
+}
+
+type CancelShippingInstructionsUpdate {
+    updatedShippingInstructionsStatus: String   # Status after update cancellation (UPDATE_CANCELLED)
+}
+
+type ApproveTransportDocument {
+    transportDocumentStatus: String             # Status after approval (APPROVED)
+}
+
+type ShippingInstructionsNotification {
+    specversion: String                         # CloudEvent spec version (1.0)
+    id: String                                  # Unique event identifier
+    source: String                              # Event source URI
+    type: String                                # Event type (org.dcsa.shipping-instructions.v3)
+    time: DateTime                              # Event timestamp
+    datacontenttype: String                     # Content type (application/json)
+    subscriptionReference: String               # Subscription reference
+    data: ShippingInstructionsData              # Event data
+}
+
+type ShippingInstructionsData {
+    shippingInstructionsStatus: String          # Status of shipping instructions
+    updatedShippingInstructionsStatus: String   # Status of latest update
+    shippingInstructionsReference: String       # Reference to shipping instructions
+    transportDocumentReference: String          # Reference to transport document
+    feedbacks: [Feedback]                       # Feedback information
+    shippingInstructions: ShippingInstructionsFull  # Complete shipping instructions
+    updatedShippingInstructions: UpdatedShippingInstructions  # Updated instructions
+}
+
+type ShippingInstructionsFull {
+    shippingInstructionsReference: String       # Reference to shipping instructions
+    transportDocumentReference: String          # Reference to transport document
+    shippingInstructionsStatus: String          # Status of shipping instructions
+    updatedShippingInstructionsStatus: String   # Status of latest update
+    transportDocumentTypeCode: String           # BOL or SWB
+    isShippedOnBoardType: Boolean               # If shipped onboard
+    freightPaymentTermCode: String              # Payment terms code
+    originChargesPaymentTerm: OriginChargesPaymentTerm  # Origin charges payment terms
+    destinationChargesPaymentTerm: DestinationChargesPaymentTerm  # Destination charges
+    isElectronic: Boolean                       # If electronically transferred
+    isToOrder: Boolean                          # If negotiable
+    numberOfCopiesWithCharges: Int              # Copies with charges
+    numberOfCopiesWithoutCharges: Int           # Copies without charges
+    numberOfOriginalsWithCharges: Int           # Originals with charges
+    numberOfOriginalsWithoutCharges: Int        # Originals without charges
+    displayedNameForPlaceOfReceipt: [String]    # Display name for receipt place
+    displayedNameForPortOfLoad: [String]        # Display name for load port
+    displayedNameForPortOfDischarge: [String]   # Display name for discharge port
+    displayedNameForPlaceOfDelivery: [String]   # Display name for delivery place
+    placeOfIssue: Location                      # Place of issue
+    invoicePayableAt: Location                  # Invoice payment location
+    partyContactDetails: [PartyContactDetail]   # Contact details
+    isCarriersAgentAtDestinationRequired: Boolean  # If agent required at destination
+    documentParties: DocumentPartiesShippingInstructions  # Document parties
+    isCargoDeliveredInICS2Zone: Boolean         # If delivered to ICS2 zone
+    consignmentItems: [ConsignmentItemShipper]  # Consignment items
+    utilizedTransportEquipments: [UtilizedTransportEquipmentShipper]  # Equipment
+    exportLicense: ExportLicenseShipper         # Export license
+    importLicense: ImportLicenseShipper         # Import license
+    references: [Reference]                     # References
+    customsReferences: [CustomsReference]       # Customs references
+    advanceManifestFilings: [AdvanceManifestFiling]  # Advance manifest filings
+    isHouseBillOfLadingsIssued: Boolean         # If house BOL issued
+    houseBillOfLadings: [HouseBillOfLading]     # House bills of lading
+    requestedCarrierCertificates: [String]      # Requested certificates
+    requestedCarrierClauses: [String]           # Requested clauses
+    feedbacks: [Feedback]                       # Feedback information
+}
+
+type UpdatedShippingInstructions {
+    shippingInstructionsReference: String       # Reference to shipping instructions
+    transportDocumentReference: String          # Reference to transport document
+    shippingInstructionsStatus: String          # Status of shipping instructions
+    updatedShippingInstructionsStatus: String   # Status of latest update
+    transportDocumentTypeCode: String           # BOL or SWB
+    isShippedOnBoardType: Boolean               # If shipped onboard
+    freightPaymentTermCode: String              # Payment terms code
+    originChargesPaymentTerm: OriginChargesPaymentTerm  # Origin charges payment terms
+    destinationChargesPaymentTerm: DestinationChargesPaymentTerm  # Destination charges
+    isElectronic: Boolean                       # If electronically transferred
+    isToOrder: Boolean                          # If negotiable
+    numberOfCopiesWithCharges: Int              # Copies with charges
+    numberOfCopiesWithoutCharges: Int           # Copies without charges
+    numberOfOriginalsWithCharges: Int           # Originals with charges
+    numberOfOriginalsWithoutCharges: Int        # Originals without charges
+    displayedNameForPlaceOfReceipt: [String]    # Display name for receipt place
+    displayedNameForPortOfLoad: [String]        # Display name for load port
+    displayedNameForPortOfDischarge: [String]   # Display name for discharge port
+    displayedNameForPlaceOfDelivery: [String]   # Display name for delivery place
+    # Same fields as ShippingInstructionsFull with focus on updated values
+}
+
+type TransportDocumentNotification {
+    specversion: String                         # CloudEvent spec version
+    id: String                                  # Unique event identifier
+    source: String                              # Event source URI
+    type: String                                # Event type
+    time: DateTime                              # Event timestamp
+    datacontenttype: String                     # Content type
+    subscriptionReference: String               # Subscription reference
+    data: TransportDocumentData                 # Event data
+}
+
+type TransportDocumentData {
+    transportDocumentStatus: String             # Status of transport document
+    shippingInstructionsReference: String       # Reference to shipping instructions
+    transportDocumentReference: String          # Reference to transport document
+    feedbacks: [Feedback]                       # Feedback information
+    transportDocument: TransportDocumentFull    # Complete transport document
+}
+
+type TransportDocumentFull {
+    # Similar to TransportDocument but specifically for notification purposes
+    transportDocumentReference: String          # Reference to transport document
+    transportDocumentSubReference: String       # Additional reference
+    shippingInstructionsReference: String       # Reference to shipping instructions
+    transportDocumentStatus: String             # Status of transport document
+    # Other fields similar to TransportDocument
+}
+
+type CreateShippingInstructions {
+    transportDocumentTypeCode: String           # BOL or SWB
+    isShippedOnBoardType: Boolean               # If shipped onboard
+    freightPaymentTermCode: String              # Payment terms code
+    originChargesPaymentTerm: OriginChargesPaymentTerm  # Origin charges
+    destinationChargesPaymentTerm: DestinationChargesPaymentTerm  # Destination charges
+    isElectronic: Boolean                       # If electronically transferred
+    isToOrder: Boolean                          # If negotiable
+    numberOfCopiesWithCharges: Int              # Copies with charges
+    numberOfCopiesWithoutCharges: Int           # Copies without charges
+    numberOfOriginalsWithCharges: Int           # Originals with charges
+    numberOfOriginalsWithoutCharges: Int        # Originals without charges
+    displayedNameForPlaceOfReceipt: [String]    # Display name for receipt place
+    displayedNameForPortOfLoad: [String]        # Display name for load port
+    displayedNameForPortOfDischarge: [String]   # Display name for discharge port
+    displayedNameForPlaceOfDelivery: [String]   # Display name for delivery place
+    placeOfIssue: Location                      # Place of issue
+    invoicePayableAt: Location                  # Invoice payment location
+    partyContactDetails: [PartyContactDetail]   # Contact details
+    isCarriersAgentAtDestinationRequired: Boolean  # If agent required
+    documentParties: DocumentPartiesShippingInstructions  # Document parties
+    isCargoDeliveredInICS2Zone: Boolean         # If delivered to ICS2 zone
+    consignmentItems: [ConsignmentItemShipper]  # Consignment items
+    utilizedTransportEquipments: [UtilizedTransportEquipmentShipper]  # Equipment
+    exportLicense: ExportLicenseShipper         # Export license
+    importLicense: ImportLicenseShipper         # Import license
+    references: [Reference]                     # References
+    customsReferences: [CustomsReference]       # Customs references
+    advanceManifestFilings: [AdvanceManifestFiling]  # Advance manifest filings
+    isHouseBillOfLadingsIssued: Boolean         # If house BOL issued
+    houseBillOfLadings: [HouseBillOfLading]     # House bills of lading
+    requestedCarrierCertificates: [String]      # Requested certificates
+    requestedCarrierClauses: [String]           # Requested clauses
+}
+
+type UpdateShippingInstructions {
+    shippingInstructionsReference: String       # Reference to shipping instructions
+    transportDocumentTypeCode: String           # BOL or SWB
+    isShippedOnBoardType: Boolean               # If shipped onboard
+    freightPaymentTermCode: String              # Payment terms code
+    originChargesPaymentTerm: OriginChargesPaymentTerm  # Origin charges
+    destinationChargesPaymentTerm: DestinationChargesPaymentTerm  # Destination charges
+    isElectronic: Boolean                       # If electronically transferred
+    isToOrder: Boolean                          # If negotiable
+    numberOfCopiesWithCharges: Int              # Copies with charges
+    numberOfCopiesWithoutCharges: Int           # Copies without charges
+    numberOfOriginalsWithCharges: Int           # Originals with charges
+    numberOfOriginalsWithoutCharges: Int        # Originals without charges
+    displayedNameForPlaceOfReceipt: [String]    # Display name for receipt place
+    displayedNameForPortOfLoad: [String]        # Display name for load port
+    displayedNameForPortOfDischarge: [String]   # Display name for discharge port
+    displayedNameForPlaceOfDelivery: [String]   # Display name for delivery place
+    placeOfIssue: Location                      # Place of issue
+    invoicePayableAt: Location                  # Invoice payment location
+    partyContactDetails: [PartyContactDetail]   # Contact details
+    isCarriersAgentAtDestinationRequired: Boolean  # If agent required
+    documentParties: DocumentPartiesShippingInstructions  # Document parties
+    isCargoDeliveredInICS2Zone: Boolean         # If delivered to ICS2 zone
+    consignmentItems: [ConsignmentItemShipper]  # Consignment items
+    utilizedTransportEquipments: [UtilizedTransportEquipmentShipper]  # Equipment
+    exportLicense: ExportLicenseShipper         # Export license
+    importLicense: ImportLicenseShipper         # Import license
+    references: [Reference]                     # References
+    customsReferences: [CustomsReference]       # Customs references
+    advanceManifestFilings: [AdvanceManifestFiling]  # Advance manifest filings
+    isHouseBillOfLadingsIssued: Boolean         # If house BOL issued
+    houseBillOfLadings: [HouseBillOfLading]     # House bills of lading
+    requestedCarrierCertificates: [String]      # Requested certificates
+    requestedCarrierClauses: [String]           # Requested clauses
+}
+
+type Feedback {
+    severity: String                            # INFO, WARN, or ERROR
+    code: String                                # Feedback code
+    message: String                             # Feedback message
+    jsonPath: String                            # Path to property
+    property: String                            # Property name
+}
+
+type ErrorResponse {
+    httpMethod: String                          # HTTP method used
+    requestUri: String                          # URI requested
+    statusCode: Int                             # HTTP status code
+    statusCodeText: String                      # Status code text
+    statusCodeMessage: String                   # Status code message
+    providerCorrelationReference: String        # Provider reference
+    errorDateTime: DateTime                     # Error datetime
+    errors: [DetailedError]                     # Detailed errors
+}
+
+type DetailedError {
+    errorCode: Int                              # Error code
+    property: String                            # Property causing error
+    value: String                               # Value causing error
+    jsonPath: String                            # Path to property
+    errorCodeText: String                       # Error code text
+    errorCodeMessage: String                    # Error message
+}
+
+type City {
+    city: String                                # Name of city
+    stateRegion: String                         # State/region
+    countryCode: String                         # Country code
+}
+
+type ShipperHouseBL {
+    partyName: String                           # Name of party
+    typeOfPerson: String                        # Type of person
+    address: Address                            # Address
+    identifyingCodes: [IdentifyingCode]         # Identifying codes
+    taxLegalReferences: [TaxLegalReference]     # Tax/legal references
+    partyContactDetails: [PartyContactDetailHouseBL]  # Contact details
+}
+
+type ConsigneeHouseBL {
+    partyName: String                           # Name of party
+    typeOfPerson: String                        # Type of person
+    address: Address                            # Address
+    identifyingCodes: [IdentifyingCode]         # Identifying codes
+    taxLegalReferences: [TaxLegalReference]     # Tax/legal references
+    partyContactDetails: [PartyContactDetailHouseBL]  # Contact details
+}
+
+type NotifyPartyHouseBL {
+    partyName: String                           # Name of party
+    typeOfPerson: String                        # Type of person
+    address: Address                            # Address
+    identifyingCodes: [IdentifyingCode]         # Identifying codes
+    taxLegalReferences: [TaxLegalReference]     # Tax/legal references
+    partyContactDetails: [PartyContactDetailHouseBL]  # Contact details
+}
+
+type SellerHouseBL {
+    partyName: String                           # Name of party
+    typeOfPerson: String                        # Type of person
+    address: Address                            # Address
+    identifyingCodes: [IdentifyingCode]         # Identifying codes
+    taxLegalReferences: [TaxLegalReference]     # Tax/legal references
+    partyContactDetails: [PartyContactDetailHouseBL]  # Contact details
+}
+
+type BuyerHouseBL {
+    partyName: String                           # Name of party
+    typeOfPerson: String                        # Type of person
+    address: Address                            # Address
+    identifyingCodes: [IdentifyingCode]         # Identifying codes
+    taxLegalReferences: [TaxLegalReference]     # Tax/legal references
+    partyContactDetails: [PartyContactDetailHouseBL]  # Contact details
+}
+
+type PartyHouseBL {
+    partyName: String                           # Name of party
+    address: Address                            # Address
+    identifyingCodes: [IdentifyingCode]         # Identifying codes
+    taxLegalReferences: [TaxLegalReference]     # Tax/legal references
+    partyContactDetails: [PartyContactDetailHouseBL]  # Contact details
+    reference: String                           # Reference
+}
+
+type PartyContactDetailHouseBL {
+    name: String                                # Name of contact
+    phone: String                               # Phone number
+    email: String                               # Email address
+}
+
+type PartyContactDetailWithPhonePattern {
+    name: String                                # Name of contact
+    phone: String                               # Phone number (with pattern)
+    email: String                               # Email address
+}
+
+type ConsignmentItemShipper {
+    carrierBookingReference: String             # Booking reference
+    commoditySubReference: String               # Commodity reference
+    descriptionOfGoods: [String]                # Description of goods
+    HSCodes: [String]                           # HS codes
+    nationalCommodityCodes: [NationalCommodityCode]  # Commodity codes
+    shippingMarks: [String]                     # Shipping marks
+    cargoItems: [CargoItemShipper]              # Cargo items
+    exportLicense: ExportLicenseShipper         # Export license
+    importLicense: ImportLicenseShipper         # Import license
+    references: [ConsignmentItemReference]      # References
+    customsReferences: [CustomsReference]       # Customs references
+}
+
+type ConsignmentItemHouseBL {
+    descriptionOfGoods: String                  # Description of goods
+    nationalCommodityCode: NationalCommodityCode  # Commodity code
+    cargoItems: [CargoItemHouseBL]              # Cargo items
+    customsReferences: [CustomsReference]       # Customs references
+}
+
+type ConsignmentItemReference {
+    type: String                                # Reference type
+    values: [String]                            # Reference values
+}
+
+type CargoItemShipper {
+    equipmentReference: String                  # Equipment reference
+    cargoGrossWeight: CargoGrossWeight          # Gross weight
+    cargoGrossVolume: CargoGrossVolume          # Gross volume
+    cargoNetWeight: CargoNetWeight              # Net weight
+    cargoNetVolume: CargoNetVolume              # Net volume
+    exportLicense: ExportLicenseShipper         # Export license
+    importLicense: ImportLicenseShipper         # Import license
+    outerPackaging: OuterPackagingShipper       # Outer packaging
+    nationalCommodityCodes: [NationalCommodityCode]  # Commodity codes
+    houseBillOfLadingReference: String          # House BOL reference
+    customsReferences: [CustomsReference]       # Customs references
+}
+
+type CargoItemHouseBL {
+    equipmentReference: String                  # Equipment reference
+    cargoGrossWeight: CargoGrossWeight          # Gross weight
+    outerPackaging: OuterPackagingHouseBL       # Outer packaging
+}
+
+type CargoGrossWeight {
+    value: Float                                # Weight value
+    unit: String                                # Weight unit
+}
+
+type CargoGrossVolume {
+    value: Float                                # Volume value
+    unit: String                                # Volume unit
+}
+
+type CargoNetWeight {
+    value: Float                                # Weight value
+    unit: String                                # Weight unit
+}
+
+type CargoNetVolume {
+    value: Float                                # Volume value
+    unit: String                                # Volume unit
+}
+
+type OuterPackagingShipper {
+    packageCode: String                         # Package code
+    numberOfPackages: Int                       # Number of packages
+    description: String                         # Description
+    woodDeclaration: String                     # Wood declaration
+}
+
+type OuterPackagingHouseBL {
+    packageCode: String                         # Package code
+    numberOfPackages: Int                       # Number of packages
+    shippingMarks: String                       # Shipping marks
+    UNNumber: String                            # UN number
+}
+
+type UtilizedTransportEquipmentShipper {
+    shippingMarks: [String]                     # Shipping marks
+    seals: [Seal]                               # Seals
+    emptyIndicatorCode: String                  # Empty indicator code
+    references: [Reference]                     # References
+    customsReferences: [CustomsReference]       # Customs references
+    # One of the following
+    shipperOwnedEquipment: ShipperOwnedEquipment  # Shipper owned equipment
+    carrierOwnedEquipment: CarrierOwnedEquipment  # Carrier owned equipment
+}
+
+type UtilizedTransportEquipmentHouseBL {
+    seals: [Seal]                               # Seals
+    emptyIndicatorCode: String                  # Empty indicator code
+    isShipperOwned: Boolean                     # If shipper owned
+    equipmentReference: String                  # Equipment reference
+    ISOEquipmentCode: String                    # ISO equipment code
+}
+
+type ShipperOwnedEquipment {
+    isShipperOwned: Boolean                     # If shipper owned (true)
+    equipment: EquipmentRequiredProperties      # Equipment details
+}
+
+type CarrierOwnedEquipment {
+    isShipperOwned: Boolean                     # If shipper owned (false)
+    equipmentReference: String                  # Equipment reference
+}
+
+type EquipmentRequiredProperties {
+    equipmentReference: String                  # Equipment reference
+    ISOEquipmentCode: String                    # ISO equipment code
+    tareWeight: String                      		# Tare weight
+}
+
+type ExportLicenseShipper {
+    isRequired: Boolean                         # If license required
+    reference: String                           # License reference
+    issueDate: DateTime                         # Issue date
+    expiryDate: DateTime                        # Expiry date
+}
+
+type ImportLicenseShipper {
+    isRequired: Boolean                         # If license required
+    reference: String                           # License reference
+    issueDate: DateTime                         # Issue date
+    expiryDate: DateTime                        # Expiry date
+}
+
+type AdvanceManifestFiling {
+    manifestTypeCode: String                    # Manifest type code
+    countryCode: String                         # Country code
+    advanceManifestFilingsHouseBLPerformedBy: String  # Who performs filing
+    selfFilerCode: String                       # Self filer code
+    identificationNumber: String                # Identification number
+}
+
+type HouseBillOfLading {
+    houseBillOfLadingReference: String          # House BOL reference
+    isToOrder: Boolean                          # If negotiable
+    placeOfAcceptance: PlaceOfAcceptance        # Place of acceptance
+    placeOfFinalDelivery: PlaceOfFinalDelivery  # Place of final delivery
+    methodOfPayment: String                     # Payment method
+    documentParties: DocumentPartiesHouseBL     # Document parties
+    isCargoDeliveredInICS2Zone: Boolean         # If delivered to ICS2 zone
+    routingOfConsignmentCountries: [String]     # Routing countries
+    consignmentItems: [ConsignmentItemHouseBL]  # Consignment items
+    utilizedTransportEquipments: [UtilizedTransportEquipmentHouseBL]  # Equipment
+}
+
+type PlaceOfAcceptance {
+    locationName: String                        # Location name
+    countryCode: String                         # Country code
+    UNLocationCode: String                      # UN location code
+}
+
+type PlaceOfFinalDelivery {
+    locationName: String                        # Location name
+    countryCode: String                         # Country code
+    UNLocationCode: String                      # UN location code
+}
+
+type DocumentPartiesShippingInstructions {
+    shipper: String                            # Shipper details
+    consignee: String         									# Consignee details
+    endorsee: String         									  # Endorsee details
+    issueTo: String                   			    # Issue to party
+    seller: String                              # Seller details
+    buyer: String                                # Buyer details
+    notifyParties: [NotifyParty]                # Notify parties
+    other: [OtherDocumentParty]                 # Other parties
+}
+
+type DocumentPartiesHouseBL {
+    shipper: ShipperHouseBL                     # Shipper details
+    consignee: ConsigneeHouseBL                 # Consignee details
+    notifyParty: NotifyPartyHouseBL             # Notify party
+    seller: SellerHouseBL                       # Seller details
+    buyer: BuyerHouseBL                         # Buyer details
+    other: [OtherDocumentPartyHouseBL]          # Other parties
+}
+
+type OtherDocumentPartyHouseBL {
+    party: PartyHouseBL                         # Party details
+    partyFunction: String                       # Party function
+}
+
+type PhoneRequired {
+    phone: String                               # Phone number
+}
+
+type EmailRequired {
+    email: String                               # Email address
+}
+
+type UNLocationCode {
+    UNLocationCode: String                      # UN location code
+}
+
+type CountryCode {
+    countryCode: String                         # Country code
+}
+
+type FreeText {
+    text: String                                # Free text
+}
+
+######## ENUMS ########
+
+enum LoanType {
+    BG
+    EPU
+    LC
+    OPEN_ACCOUNT
+    PROMISSORY_NOTE
+}
+
+enum CollaboratorRole {
+  ADMIN
+  MANAGER
+  OPERATOR
+  VIEWER
+  TRADER
+}
+
+
+enum LetterOfCreditRestrictedType {
+    RESTRICTED
+    UNRESTRICTED
+}
+
+enum LetterOfCreditTermSightType {
+    TERM
+    SIGHT
+}
+
+enum LetterOfCreditNegotiableType {
+    NEGOTIABLE
+    STRAIGHT_NONNEGOTIABLE
+}
+
+enum LetterOfCreditTransferableType {
+    TRANSFERABLE
+    UNTRANSFERABLE
+}
+
+enum LetterOfCreditConfirmationType {
+    CONFIRMED
+    UNCONFIRMED
+}
+
+enum LetterOfCreditRevocationType {
+    REVOCABLE
+    IRREVOCABLE
+}
+
+
+enum Condition {
+    DRYGOOD
+    WET
+    DAMAGED
+}
+
+enum PaymentTerm {
+    TERM
+}
+
+
+enum NMFTACode {
+    TODO
+}
+
+
+
+enum HSCODE {
+    EXAMPLECODE
+}
+
+enum HSNCODE {
+    EXAMPLECODE
+}
+
+enum HTSCODE {
+    EXAMPLECODE
+}
+
+enum CargoMovementTypeAtDestination {
+    FCL
+    LCL
+    BB
+}
+
+enum CargoMovementTypeAtOrigin {
+    FCL
+    LCL
+    BB
+}
+
+enum ShippingInstructionDocumentStatus {
+    RECE
+}
+
+enum ShippingInstructionTransportDocumentTypeCode {
+    BOL
+    SWB
+}
+
+enum MemberCollaboratorIdType {
+    PASSPORT
+    DRIVERSLICENCE
+    NATIONALIDCARD
+    WORKPERMITNUMBER
+    SOCIALSECURITYNUMBER
+}
+
+enum ElectronicRecordType {
+    COMMERCIAL_CONTRACT
+    BILL_OF_LADING
+    COMMERCIAL_INVOICE
+    TRANSPORT_DOCUMENT
+    DOCUMENTARY_CREDIT
+    CERTIFICATE_OF_ANALYSIS
+    CERTIFICATE_OF_WEIGHT
+    CERTIFICATE_OF_WEIGHT_QUALITY_PACKAGING
+    CERTIFICATE_ORIGIN
+    SANITARY_CERTIFICATE
+    CERTIFICATE_OF_CONTAINER_CLEANLINESS
+    PHYTOSANITORY_CERTIFICATE
+    EXPORT_LICENCE
+}
+
+enum TradeFinanceInstrumentsEnum {
+    LC_LETTER_OF_CREDIT
+    BG_BANK_GUARANTEE
+    SCF_SUPPLY_CHAIN_FINANCE
+    INVOICE_RECEIVABLES_FINANCE
+    STOCK_WAREHOUSE_FINANCE
+    SCTF_STRUCTURED_COMMODITY_TRADE_FINANCE
+    PURCHASE_ORDER_FINANCE
+}
+
+
+########### Interfaces ###########
+interface LCSpecialClause {
+    clauseType: String
+}
+
+interface TradeFinanceInstrument {
+    id: ID
+}
+
+interface MemberCollaboratorTODO {
+    id: ID
+    member: Member
+    memberCollaboratorIdType: MemberCollaboratorIdType
+    collaboratorType: [CollaboratorRole]
+}
+
+interface QualitySpecification {
+    qualitySpecFreeForm: FreeForm
+}
+
+interface PaymentObligation {
+    name: String
+    value: String
+}
+
+## Status enum
+
+enum StatusEnum {
+  AGREED
+  PENDING
+  ATTENTION_NEEDED
+}
+
+### Havona MVP Enums ###
+
+## Role enums
+
+enum URDTTMemberRole {
+    ADDRESSEEURDTT
+    BENEFICIARYURDTT
+    BUYERURDTT
+    OBLIGORURDTT
+    PARTYURDTT
+    PERSONURDTT
+    PRINCIPLEPARTYURDTT
+    SELLERURDTT
+    SUBMITTERURDTT
+    FSPURDTT
+}
+
+enum HavonaMemberRole {
+		CARRIERTRANSPORTER
+		FORWARDER
+    BROKER
+    SURVEYOR
+    COLLATERALMANAGER
+  	COMMODITYTRADER
+    WAREHOUSE
+ 	  PRODUCER
+  	LEGAL
+    CUSTOMSENTITY
+    CHAMBEROFCOMMERCE
+    FSPBANK
+    FSPINSURER
+    FSPNONBANK
+  	OTHER
+}
+
+enum Department {
+  TRADINGDESK
+  OPERATOR
+  LOGISTICS
+  TRADEFINANCE
+  COMPLIANCE
+  RISK
+  TECHNOLOGY 
+  GENERAL
+  FINANCE
+  BACKOFFICE
+}
+  
+
+## Transport & Location enums
+
+enum UNCountryCode {
+    AE
+    BJ
+    IRE
+    UK
+    CH
+    US
+    PH
+    BR
+    SA
+}
+
+enum UNLocationCode {
+    USNYC
+    CHLAU
+    PHMNL
+    PHCEB
+    IEBTM
+    ITLIV
+    USBAL
+    USLAX
+    GBEAW
+    GBGBN
+    GBUKM
+    TGBJ
+    TGLFW
+    CNTAO
+    RUNVS
+    PYASU
+    TNSFA
+    BRPNG
+}
+
+enum UNLocationCodeTypePortsOther {
+    PORT_UNCODE_1
+    RAIL_TERMINAL_UNCODE_2
+    ROAD_TERMINAL_UNCODE_3
+    AIRPORT_UNCODE_4
+    POSTAL_EXCHANGE_OFFICE_UNCODE_5
+    RES_FOR_MULTIMODAL_ICDS_UNCODE_6
+    RES_FOR_MULTIMODAL_EG_OIL_PLATFRM_UNCODE_7
+    BORDER_CROSSING_UNCODE_8
+    FUNC_NOT_KNOWN_UNCODE_0
+}
+
+enum DigitalTradeLawJurisdiction {
+    ENGLISH_LAW_ENGLAND_AND_WALES
+    SINGAPORE_LAW
+    UNITED_ARAB_EMIRATES_LAW
+    HONG_KONG_LAW
+}
+
+enum TransportMode {
+    VESSEL
+    RAIL
+    ROAD
+    BARGE
+    AIR
+}
+
+## Trade, Document, Signature enums
+
+enum UNECEDocumentCodes {
+    CONTRACT_CODE_315
+    CERTIFICATE_OF_ANALYSIS_CODE_1
+    CERTIFICATE_OF_ORIGIN_861
+    PROFORMA_INVOICE_CODE_325
+    COMMERCIAL_INVOICE_CODE_380
+    PHYTO_SANITARY_CERT_CODE_851
+    SANITARY_CERTIFICATE_CODE_852
+    PACKING_LIST_CODE_271
+    BANKERS_GUARANTEE_CODE_430
+    DOCUMENTARY_CREDIT_LETTER_OF_INDEMNITY_CODE_431
+    MASTER_BILL_OF_LADING_CODE_704
+    BILL_OF_LADING_CODE_705
+    BILL_OF_LADING_ORIGINAL_CODE_706
+    BILL_OF_LADING_COPY_CODE_707
+    COMBINED_TRANSPORT_BILL_OF_LADING_CODE_766
+    CUSTOMS_DELIVERY_NOTE_CODE_932
+    CUSTOMS_INVOICE_CODE_935
+    CERTIFICATE_OF_ORIGIN_CODE_861
+    IMPORT_LICENCE_CODE_911
+    EXPORT_LICENCE_CODE_810
+    MATES_RECEIPT_CODE_713
+    PREVIOUS_TRANSPORT_DOCUMENT_CODE_499
+    INSURANCE_CERTIFICATE_CODE_520
+    DOCUMENTARY_CREDIT_PAYMENT_ADVICE_CODE_426
+    DOCUMENTARY_CREDIT_ACCEPTANCE_ADVICE_CODE_427
+    DOCUMENTARY_CREDIT_NEGOTIATION_ADVICE_CODE_428
+    APPLICATIONS_FOR_GUARANTEE_FOR_BANKER_CODE_429
+    BANKERS_DRAFT_CODE_485
+    BILL_OF_EXCHANGE_CODE_490
+    PROMISSORY_NOTE_CODE_491
+    WAREHOUSE_WARRANT_CODE_635
+    FORWARDERS_WAREHOUSE_RECEIPT_CODE_631
+    FORWARDERS_BILL_OF_LADING_CODE_716
+}
+
+enum IncoTerm {
+    FAS
+    CFR
+    CIF
+    EXW
+    FCA
+    CPT
+    CIP
+    DPU
+    DAP
+    DDP
+    FOB
+}
+
+enum ElectronicPaymentUndertakings {
+    BILL_OF_EXCHANGE
+    PROMISSORY_NOTE
+    EPU_ELECTRONIC_PAYMENT_UNDERTAKING
+    ISO20022
+
+}
+
+enum PaymentTermsCode {
+    NET30_NET30DAYS
+    NET45_NET45DAYS
+    NET60_NET60DAYS
+    COD_CASH_ON_DELIVERY
+    COA_CASH_ON_ACCOUNT
+    CIA_CASH_IN_ADVANCE
+    LC_LETTER_OF_CREDIT
+    DP_DOCUMENTS_AGAINST_PAYMENT
+    DA_DOCUMENTS_AGAINST_ACCEPTANCE
+    CAD_CASH_AGAINST_DOCUMENTS
+    FOB_FREE_ON_BOARD
+    CIF_COST_INSURANCE_AND_FREIGHT
+    EXW_EX_WORKS
+    FCA_FREE_CARRIER
+}
+
+## Payment enums
+
+enum ISOCurrencyCode {
+    EUR
+    USD
+    YEN
+}
+
+enum CurrencyType {
+    CDBC
+    FIAT
+}
+
+## Status enums
+
+
+
+enum DocumentStatus {
+    PENDING
+    REVIEWING
+    REJECTED
+    ACCEPTED_AGREED
+    SEALED
+}
+
+enum DigitalTradeTransactionStatus {
+    BLOTTING
+    CONTRACT_INITIATED
+    CONTRACT_IN_PROGRESS
+    CONTRACT_FINALISED
+    DTT_INITIATED
+    DTT_IN_PROGRESS
+    ELECTRONIC_RECORDS_PENDING
+    LOADING
+    IN_TRANSIT
+    DISCHARGING
+    ANALYSIS_PENDING
+    ANALYSIS_COMPLETE
+    PAYMENT_PENDING
+    PAYMENT_COMPLETE
+    ELECTRONIC_RECORDS_FINALISED
+    TITLE_TRANSFER
+    CLOSED_UNSUCCESSFULLY
+    CLOSED_SUCCESSFULLY
+    DTT_FINALISED
+}
+
+## Measurement Enums
+
+enum WeightUnit {
+    KGM
+    KG
+    TNE
+    GT
+    NT
+    MT
+    LT # Long Ton
+    ST # Short Ton
+    LBS # lbs or pounds
+}
+
+enum VolumeUnit {
+    CBM # cubic meter
+    CU_FT # cubic foot
+    TEU #Twenty-Foot Equivalent Unit / One TEU is equal to a 20-foot shipping container.
+    FEU #Forty-Foot Equivalent Unit (FEU)
+}
