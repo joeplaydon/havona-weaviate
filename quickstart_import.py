@@ -21,7 +21,7 @@ resp = requests.get(
 )
 data = json.loads(resp.text)
 
-questions = client.collections.get("Question")
+questions = client.collections.get("HavonaSchema")
 
 with questions.batch.dynamic() as batch:
     for d in data:

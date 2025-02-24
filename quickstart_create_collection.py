@@ -3,7 +3,6 @@ from weaviate.classes.init import Auth
 from weaviate.classes.config import Configure
 import os
 from dotenv import load_dotenv
-
 load_dotenv()
 # Best practice: store your credentials in environment variables
 wcd_url = os.environ["WCD_URL"]
