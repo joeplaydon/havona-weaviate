@@ -1,0 +1,1472 @@
+# Havona Digital Trade Schema
+# ----------------------
+# Schema for Digital Trade Documents and Electronic Transferable Records (ETRs)
+# Based on UN/CEFACT, DCSA, FIATA, ICC DSI standards
+
+## DigitalTradeTransaction (DTT) - Master Object
+# Primary object that groups all related documents in a single trade transaction
+
+type DigitalTradeTransaction {
+    id: ID!                                     # Unique identifier
+    status: DigitalTradeTransactionStatus       # Current status of the transaction
+    uniqueTradeIdentifier: String               # Unique reference for the trade 
+    electronicPaymentUndertakings: [ElectronicPaymentUndertaking]
+    electronicRecords: [ElectronicRecord]       # All related electronic records
+    DLTBlockchainTransactions: [DLTTransaction] # Blockchain transaction records
+    principleParties: [PrincipleParties]        # Key trade parties
+    paymentTerms: [PaymentTerms]                # Payment terms and conditions
+    digitalTradeLawJurisdiction: DigitalTradeLawJurisdiction  # Legal framework
+    transportDocumentEBL: TransportDocumentEBL  # Bill of lading details
+    optionsRelatedFields: String                # Additional options information
+    fieldStatuses: [FieldStatus]                # Current status of fields
+    fieldHistories: [FieldHistory]              # Change history of fields
+}
+
+## Core Trade Documents
+# Main electronic records that form the basis of commodity trade transactions
+
+type TradeContract implements ElectronicRecord {
+    id: ID!
+    dtt: DigitalTradeTransaction               # Parent transaction
+    file: FreeForm                             # Document content
+    contractNo: String                         # Contract reference number
+    contractDate: DateTime                     # Date of contract
+    status: DigitalTradeTransactionStatus      # Current status
+    incoTerms: IncoTerm                        # International commercial terms
+    paymentTerms: PaymentTerms                 # Payment details
+    productGoods: ProductGoods                 # Goods details
+    generalConditions: GeneralConditions       # General trading conditions
+    delivery: GoodsDelivery                    # Delivery information
+    seller: Member                             # Seller party details
+    buyer: Member                              # Buyer party details
+    broker: Member                             # Broker if applicable
+    principleParties: PrincipleParties         # Main trading parties
+    principlePaymentParties: PrinciplePaymentParties  # Payment parties
+    insurance: Insurance                       # Insurance details
+    titleRisk: Member                          # Title risk holder
+    arbitrationCourtsOfLaw: UNLocationCode     # Dispute resolution location
+    signatures: [Signature]                    # Digital signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal]  # Document seals
+    fieldStatuses: [FieldStatus]               # Current status of fields
+    fieldHistories: [FieldHistory]             # Change history of fields
+    uNECEDocumentCodes: [UNECEDocumentCodes]   # Standard document codes
+}
+
+type CommercialInvoice implements ElectronicRecord {
+    id: ID!                                    # Invoice number
+    dtt: DigitalTradeTransaction               # Parent transaction
+    invoiceDate: DateTime                      # Date of invoice
+    lastModifiedDate: DateTime                 # Last update date
+    TradeContract: TradeContract               # Related trade contract
+    file: FreeForm                             # Document content
+    buyer: Member                              # Party to which goods/services are sold
+    seller: Member                             # Party selling goods/services
+    transportDocReference: TransportDocumentEBL # Transport document reference
+    transports: Transports                     # Transport details
+    carrierBookingRef: ShippingInstructionEBL  # Carrier booking reference
+    productGoods: ProductGoods                 # Goods details
+    otherInvoiceItems: FreeForm                # Other invoice line items
+    paymentTerms: PaymentTerms                 # Payment details
+    isAdvancedPayment: Boolean                 # If payment made in advance
+    advancedPaymentAmount: MoneyAmount         # Amount of advance payment
+    totalAmountDue: MoneyAmount                # Total amount payable
+    signatures: [Signature]                    # Digital signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal]  # Document seals
+    fieldStatuses: [FieldStatus]               # Current status of fields
+    fieldHistories: [FieldHistory]             # Change history of fields
+    uNECEDocumentCodes: UNECEDocumentCodes     # Standard document code
+}
+
+type ProFormaInvoice implements ElectronicRecord {
+    id: ID!
+    dtt: DigitalTradeTransaction               # Parent transaction
+    tradeContract: TradeContract               # Related trade contract
+    file: FreeForm                             # Document content
+    creationDate: DateTime                     # Date created
+    declaration: FreeForm                      # Declaration text
+    customsLoading: Member                     # Customs at loading location
+    customsDestination: Member                 # Customs at destination
+    shippersDetails: Member                    # Shipper information
+    productDescription: ProductGoods           # Description of goods
+    reasonForExport: FreeForm                  # Purpose of export
+    collectionAddress: Address                 # Collection location
+    deliveryAddress: Address                   # Delivery location
+    signatures: [Signature]                    # Digital signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal]  # Document seals
+    fieldStatuses: [FieldStatus]               # Current status of fields
+    fieldHistories: [FieldHistory]             # Change history of fields
+    uNECEDocumentCodes: UNECEDocumentCodes     # Standard document code
+}
+
+type PackingList implements ElectronicRecord {
+    id: ID!
+    dtt: DigitalTradeTransaction               # Parent transaction
+    file: FreeForm                             # Document content
+    blNumber: TransportDocumentEBL             # Bill of lading number
+    packingDescription: String                 # Description of packing
+    uNECEDocumentCodes: UNECEDocumentCodes     # Standard document code
+    transports: Transports                     # Transport details
+    unitMeasurements: UnitMeasurements         # Measurement information
+    items: ProductGoods                        # Products/goods details
+    bagMarks: String                           # Markings on bags
+    taxable: Boolean                           # If goods are taxable
+    signatures: [Signature]                    # Digital signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal]  # Document seals
+}
+
+type TransportDocumentEBL implements ElectronicRecord {
+    id: ID!
+    file: FreeForm                             # Document content
+    dtt: DigitalTradeTransaction               # Parent transaction
+    uNECEDocumentCodes: UNECEDocumentCodes     # Standard document code
+    DCSAAPIversion: String                     # DCSA API version used
+    TransportDocReference: String              # Transport document reference
+    billsOfLadingNo: Int                       # Bill of lading number
+    PlaceOfIssue: String                       # Where document was issued
+    IssueDate: DateTime                        # Date of issuance
+    receivedForShipmentDate: DateTime          # When cargo was received
+    termsAndConditions: String                 # Terms and conditions
+    cargoMovementTypeAtOrigin: CargoMovementTypeAtOrigin      # Cargo handling at origin
+    cargoMovementTypeAtDestination: CargoMovementTypeAtDestination  # Cargo handling at destination
+    receiptDeliveryTypeAtOrigin: String        # Receipt type at origin
+    receiptDeliveryTypeAtDestination: String   # Delivery type at destination
+    serviceContractReference: String           # Service contract reference
+    shippingInstruction: String                # Shipping instructions
+    shippingInstructionID: String              # Shipping instruction ID
+    transportElectronicRecordType: String      # Type of electronic record
+    isShippedOnboardType: Boolean              # If shipped on board
+    numberOfCopies: Int                        # Number of copies issued
+    numberOfOriginals: Int                     # Number of originals issued
+    preCarriageUnderShippersResponsibility: String  # Pre-carriage responsibility
+    invoicePayableAt: Location                 # Invoice payment location
+    isElectronic: Boolean                      # If electronic format
+    isChargesDisplayed: Boolean                # If charges are displayed
+    carrierBookingReference: String            # Carrier booking reference
+    cargoItem: CargoItem                       # Cargo item details
+    utilizedTransportEquipments: UtilizedTransportEquipments  # Transport equipment
+    ElectronicRecordParties: [TransportMemberDCSA]  # Parties to transport
+    shipmentLocation: ShippingLocation         # Shipment location
+    references: [Reference]                    # Related references
+    charges: [Charge]                          # Applicable charges
+    clauses: [Clause]                          # Document clauses
+    transports: Transports                     # Transport details
+    electronicSignature: Signature             # Electronic signature
+    shipment: Shipment                         # Shipment details
+    hasTitleOwnerShipChanged: Boolean          # If title has changed
+    documentStatus: DocumentStatus             # Document status
+    signatures: [Signature]                    # Digital signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal]  # Document seals
+    negotiableInstrumentConfig: NegotiableInstrumentConfig  # Negotiable instrument settings
+    fieldStatuses: [FieldStatus]               # Current status of fields
+    fieldHistories: [FieldHistory]             # Change history of fields
+}
+
+type ShippingInstructionEBL implements ElectronicRecord {
+    id: ID!
+    file: FreeForm                             # Document content
+    uNECEDocumentCodes: UNECEDocumentCodes     # Standard document code
+    dtt: DigitalTradeTransaction               # Parent transaction
+    shippingInstructionReference: String       # Shipping instruction reference
+    documentStatus: ShippingInstructionDocumentStatus  # Document status
+    transportDocumentTypeCode: ShippingInstructionTransportDocumentTypeCode  # Document type code
+    shippingInstructionCreatedDateTime: DateTime  # Creation date/time
+    shippingInstructionUpdatedDateTime: DateTime  # Update date/time
+    amendToTransportDocument: String           # Amendment reference
+    isShippedOnBoardType: Boolean              # If shipped on board
+    numberOfCopiesWithCharges: Int             # Copies with charges
+    numberOfCopiesWithoutCharges: Int          # Copies without charges
+    numberOfOriginalsWithCharges: Int          # Originals with charges
+    numberOfOriginalsWithoutCharges: Int       # Originals without charges
+    isElectronic: Boolean                      # If electronic format
+    isToOrder: Boolean                         # If to order
+    displayedNameForPlaceOfReceipt: String     # Display name for receipt place
+    displayedNameForPortOfLoad: String         # Display name for load port
+    displayedNameForPortOfDischarge: String    # Display name for discharge port
+    displayedNameForPlaceOfDelivery: String    # Display name for delivery place
+    carrierBookingReferences: String           # Carrier booking references
+    signatures: [Signature]                    # Digital signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal]  # Document seals
+    fieldStatuses: [FieldStatus]               # Current status of fields
+    fieldHistories: [FieldHistory]             # Change history of fields
+}
+
+type CertificateOfOrigin implements ElectronicRecord {
+    id: ID!
+    file: FreeForm                             # Document content
+    TradeContract: TradeContract               # Related trade contract
+    dtt: DigitalTradeTransaction               # Parent transaction
+    exportInvoiceNumber: String                # Export invoice number
+    exportInvoiceDate: DateTime                # Export invoice date
+    certOfOriginNumber: String                 # Certificate number
+    letterOfCreditNumber: String               # Letter of credit reference
+    isElectronicCertOfOrigin: Boolean          # If electronic format
+    issuedByChamber: Boolean                   # If issued by chamber of commerce
+    chamberOfCommerce: Member                  # Chamber details
+    issuedBySurveyor: Boolean                  # If issued by surveyor
+    surveyor: Member                           # Surveyor details
+    uNECEDocumentCodes: UNECEDocumentCodes     # Standard document code
+    electronicRecordType: ElectronicRecordType  # Type of electronic record
+    exporterSeller: Member                     # Exporter/seller details
+    consignee: Member                          # Consignee details
+    buyer: Member                              # Buyer details
+    modeOfTransport: TransportMode             # Transport mode
+    carrierVoyageNumber: TransportDocumentEBL  # Carrier voyage number
+    nameOfVessel: PackingList                  # Vessel name
+    vesselIMONumber: TransportDocumentEBL      # Vessel IMO number
+    portOfLoading: TransportDocumentEBL        # Loading port
+    portOfDischarge: TransportDocumentEBL      # Discharge port
+    totalNewWeightKG: PackingList              # Total net weight
+    totalGrossWeightKG: PackingList            # Total gross weight
+    totalNumberOfBags: PackingList             # Total bags
+    totalNumberOfContainers: PackingList       # Total containers
+    goodsDescription: FreeForm                 # Goods description
+    packingDescription: String                 # Packing description
+    bagMarks: PackingList                      # Bag markings
+    item: Item                                 # Item details
+    taxable: PackingList                       # If taxable
+    tariffCode: ProductGoods                   # Tariff code
+    certIssuerDeclaration: FreeForm            # Issuer declaration
+    certIssuerSignature: Signature             # Issuer signature
+    originCountry: ProductGoods                # Country of origin
+    exporterSignature: Signature               # Exporter signature
+    documentStatus: DocumentStatus             # Document status
+    signatures: [Signature]                    # Digital signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal]  # Document seals
+    fieldStatuses: [FieldStatus]               # Current status of fields
+    fieldHistories: [FieldHistory]             # Change history of fields
+}
+
+type WarehouseReceipt implements ElectronicRecord {
+    id: ID!
+    dtt: DigitalTradeTransaction               # Parent transaction
+    file: FreeForm                             # Document content
+    isFungible: Boolean                        # If goods are fungible
+    coMingleIsAllowed: Boolean                 # If co-mingling allowed
+    goodsSupplier: Member                      # Supplier of goods
+    goodsDepositor: Member                     # Depositor of goods
+    depositorSpecialInstructions: FreeForm     # Special instructions
+    warehouseKeeper: Member                    # Warehouse keeper
+    warehouseOperator: Member                  # Warehouse operator
+    locationAddressOfGoods: Location           # Goods location
+    insuredBy: Member                          # Insurance provider
+    insurer: Member                            # Insurer details
+    uNECEDocumentCodes: UNECEDocumentCodes     # Standard document code
+    referenceNumber: String                    # Reference number
+    receiptNumber: String                      # Receipt number
+    lotNumber: String                          # Lot number
+    receivedDate: DateTime                     # Date received
+    receivedAt: Location                       # Receipt location
+    meansOftransport: Transports               # Transport means
+    insurance: [WarehouseInsurance]            # Insurance details
+    goodsDescription: ProductGoods             # Goods description
+    totalGrossWeight: UnitMeasurements         # Total gross weight
+    periodOfStorageFrom: DateTime              # Storage start date
+    periodOfStorageTo: DateTime                # Storage end date
+    storageFees: MoneyAmount                   # Storage fees
+    totalAmountDue: MoneyAmount                # Total amount due
+    issuanceDate: DateTime                     # Date of issuance
+    signatureOfIssuance: [Signature]           # Issuance signature
+    postTradeDocumentSeals: [PostTradeDocumentSeal]  # Document seals
+    signatures: [Signature]                    # Digital signatures
+    fieldStatuses: [FieldStatus]               # Current status of fields
+    fieldHistories: [FieldHistory]             # Change history of fields
+}
+
+type CustomsGoodsDeclaration {
+    id: String!                                # Declaration ID
+    dtt: DigitalTradeTransaction               # Parent transaction
+    conveyanceRefNumber: String                # Conveyance reference
+    invoiceNumber: String                      # Invoice number
+    previousDocumentNumber: String             # Previous document reference
+    officeOfDeclaration: String                # Declaration office
+    submitter: Member                          # Submitting party
+    agentExporterImporter: Member              # Agent details
+    carrierIdentification: TransportDocumentEBL  # Carrier ID
+    supplier: Member                           # Supplier details
+    warehouse: WarehouseReceipt                # Warehouse information
+    locationOfGoods: Location                  # Goods location
+    transportDocumentIssuePlace: TransportDocumentEBL  # Document issue place
+    countryOfOrigin: UNCountryCode             # Origin country
+    totalNumberOfItems: Int                    # Total items
+    deliveryDestination: UNLocationCode        # Delivery destination
+    officeOfExit: String                       # Exit office
+    countryOfExportation: UNCountryCode        # Export country
+    itemLevelInformation: String               # Item details
+    descriptionOfGoods: ProductGoods           # Goods description
+    commodityClassification: String            # Commodity classification
+    numberOfPackages: TransportDocumentEBL     # Package count
+    typeOfPackagesIdentification: String       # Package type
+    totalGrossWeight: Float                    # Total gross weight
+    totalNumberOfPackages: CargoItem           # Total packages
+    transportDocumentIssueDate: TransportDocumentEBL  # Document issue date
+    dateOfArrivalAtPlaceOfDischarge: TransportDocumentEBL  # Arrival date
+    invoiceData: CommercialInvoice             # Invoice information
+    typeOfMeansOfTransportAtArrival: TransportDocumentEBL  # Transport type at arrival
+    identificationOfMeansOfTransportCrossingBorder: TransportDocumentEBL  # Border transport ID
+    typeOfMeansOfTransportCrossingBorder: TransportDocumentEBL  # Border transport type
+    typeOfMeansOfTransportAtDeparture: TransportDocumentEBL  # Departure transport type
+    transportEquipmentLoadedStatus: TransportDocumentEBL  # Equipment load status
+    shippingMarks: TransportDocumentEBL        # Shipping marks
+    termsOfPaymentCode: PaymentTermsCode       # Payment terms code
+    totalInvoiceAmount: CommercialInvoice      # Total invoice amount
+    customsValue: Float                        # Customs value
+    statisticalValue: Float                    # Statistical value
+    equipmentIdentificationNumber: TransportDocumentEBL  # Equipment ID
+    seal: String                               # Seal details
+    dutyTaxFeeTypeHeaderLevel: String          # Duty/tax type
+    dutyTaxPaymentMethod: String               # Duty payment method
+    dutyTaxFeeAssessed: Float                  # Assessed duty/tax
+    charges: Float                             # Charges amount
+    valuationMethod: String                    # Valuation method
+    typeOfDutyRegime: String                   # Duty regime type
+    tariffQuantitySupplementaryQuantity: Float  # Tariff quantity
+    fieldStatuses: [FieldStatus]               # Current status of fields
+    fieldHistories: [FieldHistory]             # Change history of fields
+}
+
+type CertificateOfAnalysis {
+    id: ID!
+    tradeContract: TradeContract               # Related trade contract
+    certificateNumber: String                  # Certificate number
+    surveyorReference: String                  # Surveyor reference
+    nameofVessel: String                       # Vessel name
+    portOfLoading: Location!                   # Loading port
+    portOfDischarge: Location!                 # Discharge port
+    packingDescription: String                 # Packing description
+    totalNetWeight: String                     # Total net weight
+    totalGrossWeight: String                   # Total gross weight
+    totalNumberofBags: String                  # Total bags
+    totalNumberofContainers: String            # Total containers
+    goodsDescription: String                   # Goods description
+    bLNumberandShipmentDate: DateTime          # BL number and ship date
+    surveyorCertifyingText: String             # Surveyor certification
+    analysistext: String                       # Analysis text
+    actualSpecificationsresultsoftheGoods: String  # Analysis results
+    fitforhumanconsumption: String             # If fit for consumption
+    signatureStamp: MemberCollaborator         # Signature details
+    blNumber: Int                              # BL number
+    shippingDate: DateTime                     # Shipping date
+    polarizationDegrees: Int                   # Polarization
+    moisturePercent: Int                       # Moisture percentage
+    ashPercent: Int                            # Ash percentage
+    colourICUSA: Int                           # Color ICUSA value
+}
+
+## Financial Documents
+
+type CargoInsuranceCertificate {
+    id: ID!                                    # Certificate identifier
+    certificateNumber: String                  # Certificate number
+    insuredName: Member                        # Insured entity
+    issuingCompany: Member                     # Issuing insurance company
+    claimsAgent: Member                        # Claims agent
+    notifyParty: Member                        # Party to notify
+    insuranceTerms: String                     # Terms and conditions
+    coverAmount: Float                         # Amount covered
+    currency: String                           # Currency of cover amount
+    premium: Float                             # Insurance premium
+    fieldStatuses: [FieldStatus]               # Current status of fields
+    fieldHistories: [FieldHistory]             # Change history of fields
+}
+
+type CreditInsuranceCertificate {
+    id: ID!                                    # Certificate identifier
+    policyNumber: String                       # Policy number
+    insuredEntity: Member                      # Insured party
+    issuingInsuranceCompany: Member!           # Issuing company
+    beneficiary: Member                        # Beneficiary
+    notifyParty: Member                        # Party to notify
+    termsAndConditions: String!                # Terms and conditions
+    coverAmount: Float                         # Cover amount
+    currency: String                           # Currency
+    premium: Float                             # Premium amount
+    effectiveDate: DateTime!                   # Policy start date
+    expiryDate: DateTime                       # Policy expiry date
+    fieldStatuses: [FieldStatus]               # Current status of fields
+    fieldHistories: [FieldHistory]             # Change history of fields
+}
+
+type LetterOfCredit implements ElectronicRecord {
+    id: ID!
+    dtt: DigitalTradeTransaction               # Parent transaction
+    file: FreeForm                             # Document content
+    letterOfCreditName: FreeForm               # LC name/title
+    fspId: String                              # Financial service provider ID
+    otherLCId: String                          # Alternative LC ID
+    uNECEDocumentCodes: UNECEDocumentCodes     # Standard document code
+    principleParties: PrincipleParties         # Main parties
+    paymentParties: Member                     # Payment parties
+    payment: PaymentTerms                      # Payment terms
+    isStandbyLC: Boolean                       # If standby LC
+    partialDrawings: Boolean                   # If partial drawings allowed
+    productGoods: ProductGoods                 # Goods details
+    goodsDelivery: GoodsDelivery               # Delivery details
+    specialClauses: LCSpecialClause            # Special clauses
+    lcType: LcCreditTerms                      # Credit terms
+    termsAndConditions: FreeForm               # Terms and conditions
+    additionalConditions: FreeForm             # Additional conditions
+    confirmationInstructions: FreeForm         # Confirmation instructions
+    signatures: [Signature]                    # Digital signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal]  # Document seals
+    negotiableInstrumentConfig: NegotiableInstrumentConfig  # Negotiable instrument settings
+    fieldStatuses: [FieldStatus]               # Current status of fields
+    fieldHistories: [FieldHistory]             # Change history of fields
+}
+
+type ElectronicPaymentUndertaking {
+    id: ID!
+    dtt: DigitalTradeTransaction               # Parent transaction
+    electronicBillOfExchange: EPUElectronicBillOfExchange  # Bill of exchange
+    tradeFinanceInstruments: [TradeFinanceInstrument]  # Trade finance instruments
+    issuer: Member                             # Issuing party
+    firstHolder: Member                        # First holder
+    epuDetails: EpuDetails                     # EPU details
+    payableAt: BankAccount                     # Payment location
+    issuerElectronicSignature: Signature       # Issuer signature
+    issuerName: String                         # Issuer name
+    issuerPosition: String                     # Issuer position
+}
+
+type EPUElectronicBillOfExchange {
+    id: ID!
+    dtt: DigitalTradeTransaction               # Parent transaction
+    electronicPaymentUndertaking: ElectronicPaymentUndertaking  # Parent EPU
+    tradeFinanceInstruments: [TradeFinanceInstrument]  # Trade finance instruments
+    issuer: Member                             # Issuer
+    acceptor: Member                           # Accepting party
+    firstHolder: Member                        # First holder
+    epuDetails: EpuDetails                     # EPU details
+    payableAt: BankAccount                     # Payment location
+    issuerAndAcceptorElectronicSignatures: [Signature]  # Signatures
+    issuerName: String                         # Issuer name
+    issuerPosition: String                     # Issuer position
+    negotiableInstrumentConfig: NegotiableInstrumentConfig  # Negotiable instrument settings
+}
+
+type ElectronicPromissoryNote {
+    negotiableInstrumentConfig: NegotiableInstrumentConfig  # Negotiable instrument settings
+    id: ID!
+    dtt: DigitalTradeTransaction               # Parent transaction
+    electronicPaymentUndertaking: ElectronicPaymentUndertaking  # Parent EPU
+    tradeFinanceInstruments: [TradeFinanceInstrument]  # Trade finance instruments
+    maker: Member                              # Maker (who will pay)
+    payee: Member                              # Payee (who will receive payment)
+    holder: Member                             # First holder of the note
+    epuDetails: EpuDetails                     # EPU details
+    payableAt: BankAccount                     # Payment location
+    makerAndPayeeElectronicSignatures: [Signature]  # Signatures
+    makerName: String                          # Maker name
+    makerPosition: String                      # Maker position
+}
+
+## Supporting Components
+
+type ProductGoods {
+    name: String                               # Product name
+    quantity: Int                              # Quantity
+    price: MoneyAmount                         # Price details
+    subtotal: Float                            # Subtotal
+    weightUnit: WeightUnit                     # Weight unit
+    hsCode: String                             # HS code
+    hsnCode: String                            # HSN code
+    htsCode: String                            # HTS code
+    hsCodeDescription: HSCodes                 # HS code description
+    unitMeasurements: UnitMeasurements         # Measurement details
+    qualitySpecifications: FreeForm            # Quality specifications
+    qualityWeightConditions: FreeForm          # Weight conditions
+    originCountry: UNCountryCode               # Country of origin
+    originLocation: UNLocationCode             # Location of origin
+}
+
+type UnitMeasurements {
+    amount: MoneyAmount                        # Monetary amount
+    currency: Currency                         # Currency
+    unitPrice: Float                           # Unit price
+    totalPrice: Float                          # Total price
+    unitsValue: MoneyAmount                    # Units value
+    totalValue: MoneyAmount                    # Total value
+    totalNetWeightKG: Int                      # Total net weight
+    quantityPerMeasurement: Int                # Quantity per measurement
+    quantityWeight: Int                        # Quantity weight
+    totalNetWeight: String                     # Total net weight
+    weightUnit: WeightUnit                     # Weight unit
+    volumeUnit: VolumeUnit                     # Volume unit
+    weight: Int                                # Weight
+    volume: Int                                # Volume
+    totalGrossWeightKG: Int                    # Total gross weight
+    totalNumberOfBags: Int                     # Total bags
+    totalNumberOfContainers: Int               # Total containers
+    totalQuantityLoadedTonnes: Int             # Total loaded tonnes
+    unitNetWeightBagsKg: Int                   # Unit net weight of bags
+    unitGrossWeightBagsKg: Int                 # Unit gross weight of bags
+    cargoGrossWeightUnit: WeightUnit           # Cargo gross weight unit
+    cargoGrossWeight: Int                      # Cargo gross weight
+    tareWeight: Int                            # Tare weight
+}
+
+type MoneyAmount {
+    iSOCurrencyCode: ISOCurrencyCode           # Currency code
+    amount: Float                              # Amount
+    amountMaximum: MoneyAmount                 # Maximum amount
+    amountInWords: String                      # Amount in words
+}
+
+type Address {
+    firstAddressLine: String                   # First line of address
+    city: UNLocationCode                       # City
+    region: String                             # Region
+    country: UNCountryCode                     # Country
+    postalCode: String                         # Postal code
+}
+
+type Member {
+    id: ID!
+    companyName: String                        # Company name
+    havonaMemberRole: [HavonaMemberRole]       # Member roles in Havona
+    urdttMemberRole: [URDTTMemberRole]         # URDTT member roles
+    collaborators: [MemberCollaborator]        # Member collaborators
+    companyInformation: CompanyInformation     # Company information
+    contactDetails: String                     # Contact details
+    memberPublicKey: String!                   # Public key
+    DLTPublicKey: String                       # DLT public key
+    renew: String                              # Renewal information
+    certificate: String                        # Certificate information
+    registrationStatus: String                 # Registration status
+}
+
+type MemberCollaborator {
+    id: ID!                                    # Collaborator ID
+    role: CollaboratorRole!                    # Role
+    member: Member                             # Member organization
+    firstName: String                          # First name
+    lastName: String                           # Last name
+    dataOfBirth: String                        # Date of birth
+    department: [Department]                   # Department
+    jobFunction: String                        # Job function
+    email: String                              # Email address
+    middleNames: String                        # Middle names
+    driversLicenseNumber: String               # Driver's license number
+    passportNumber: String                     # Passport number
+    nationalIdNumber: String                   # National ID number
+    socialSecurityNumber: String               # Social security number
+    telephone: String                          # Telephone number
+    addressBusiness: Member                    # Business address
+    addressPersonal: Member                    # Personal address
+    DLTPublicKey: String                       # DLT public key
+    companyPublicKey: String                   # Company public key
+    signature: String                          # Signature
+    signatureStamp: FreeForm                   # Signature stamp
+}
+
+type PrincipleParties {
+    buyer: Member                 // The entity purchasing goods or services
+    buyerFSP: Member              // Financial Service Provider for the buyer
+    seller: Member                // The entity selling goods or services
+    sellerFSP: Member             // Financial Service Provider for the seller
+}
+
+type PrinciplePaymentParties {
+    obligorPrincipleParty: Member #buyer      // Party obligated to make payment (typically the buyer)
+    obligorFSP: Member                         // Financial Service Provider for the obligor
+    beneficiaryPrincipleParty: Member #seller  // Party receiving payment (typically the seller)
+    beneficiaryFSP: Member                     // Financial Service Provider for the beneficiary
+    finalBeneficiary: Member                   // Ultimate recipient of funds if different from beneficiary
+    chequePayableTo: Member                    // Entity to whom any cheque payments should be made
+}
+
+type Address {
+    firstAddressLine: String                   # Primary address line
+    city: UNLocationCode                       # City code from UN standards
+    region: String                             # State/province/region
+    country: UNCountryCode                     # Country code from UN standards
+    postalCode: String                         # ZIP/postal code
+}
+
+type LOU {
+    prefix: String                             # Legal entity identifier prefix
+}
+
+type LEIRecord {
+    lei: String                                # Legal Entity Identifier - unique code for legal entity
+    legalName: String                          # Official registered name of the entity
+    legalAddress: Address                      # Registered legal address
+    headquartersAddress: Address               # Address of headquarters
+    registrationAuthority: RegistrationAuthority  # Authority that registered the entity
+    legalJurisdiction: String                  # Legal jurisdiction of the entity
+    entityCategory: String                     # Category of the legal entity
+    legalForm: LegalForm                       # Legal form of the entity
+    entityStatus: String                       # Current operational status of the entity
+    entityCreationDate: DateTime               # Date the entity was created/registered
+    registration: Registration                 # Registration details
+    geocoding: Geocoding                       # Geographic coordinates
+}
+
+type Registration {
+    initialRegistrationDate: DateTime          # Date of first registration
+    lastUpdateDate: DateTime                   # Date of last update to registration
+    registrationStatus: String                 # Current registration status
+    nextRenewalDate: DateTime                  # When registration needs to be renewed
+    managingLOU: String                        # Managing Local Operating Unit
+    validationSources: String                  # Sources used to validate entity
+    validationAuthority: RegistrationAuthority # Authority that validated the entity
+}
+
+type RegistrationAuthority {
+    registrationAuthorityID: String            # ID of the registration authority
+    registrationAuthorityEntityID: String      # ID assigned by the registration authority
+}
+
+type LegalForm {
+    entityLegalFormCode: String                # Code representing the legal form of entity
+}
+
+type Insurance {
+    insurance: String                          # Type of insurance
+    quote: String                              # Insurance quote reference
+    cost: Int                                  # Cost of insurance
+}
+
+type Member {
+    id: ID                                     # Unique identifier for member
+    companyName: String                        # Name of the company
+    havonaMemberRole: [HavonaMemberRole]       # Role in Havona platform
+    urdttMemberRole: [URDTTMemberRole]         # Role under URDTT
+    collaborators: [MemberCollaborator]        # People associated with the member
+    companyInformation: CompanyInformation     # Company details
+    contactDetails: String                     # Contact information
+    memberPublicKey: String!                   # Public key for digital signatures
+    DLTPublicKey: String                       # Distributed ledger technology public key
+    renew: String                              # Renewal information
+    certificate: String                        # Digital certificate
+    registrationStatus: String                 # Current registration status
+}
+
+type CompanyInformation {
+    lei: LEIRecord                             # Legal Entity Identifier record
+    lou: LOU                                   # Local Operating Unit
+    name: String                               # Company name
+    address: Address                           # Address information
+    status: String                             # Operational status
+    ubo: String                                # Ultimate Beneficial Owner
+    incorporationDate: DateTime                # Date of incorporation
+    nameOfRegistry: String                     # Name of the registry where registered
+    countryOfRegistry: UNCountryCode           # Country where registered
+    companyType: String                        # Type of company
+    sicIndustry: String                        # Standard Industrial Classification
+    codeIndustry: String                       # Industry code
+    companyOfficers: [MemberCollaborator]      # Officers of the company
+    shareholders: [MemberCollaborator]         # Shareholders information
+    taxReference1: String                      # Primary tax reference number
+    taxReference2: String                      # Secondary tax reference number
+    DLTPublicKey: String                       # Distributed ledger technology public key
+    companyPublicKey: String                   # Company's public key for encryption
+    memberContactDetails: String               # Contact information
+}
+
+type MemberCollaborator {
+    id: ID                                     # Unique identifier for collaborator
+    role: CollaboratorRole!                    # Role in the organization
+    member: Member                             # Associated member organization
+    firstName: String                          # First name
+    lastName: String                           # Last name
+    dataOfBirth: String                        # Date of birth
+    department: [Department]                   # Department(s) within organization
+    jobFunction: String                        # Job function/title
+    email: String                              # Email address
+    middleNames: String                        # Middle name(s)
+    driversLicenseNumber: String               # Driver's license number
+    passportNumber: String                     # Passport number
+    nationalIdNumber: String                   # National ID number
+    socialSecurityNumber: String               # Social security number
+    telephone: String                          # Telephone number
+    addressBusiness: Member                    # Business address
+    addressPersonal: Member                    # Personal address
+    DLTPublicKey: String                       # Distributed ledger technology public key
+    companyPublicKey: String                   # Company public key for encryption
+    signature: String                          # Digital signature
+    signatureStamp: FreeForm                   # Signature stamp image/data
+}
+
+type DLTTransaction {
+    participants: [Member]                     # Parties involved in the transaction
+    signers: [Member]                          # Parties who signed the transaction
+    signatures: [Signature]                    # Digital signatures
+    transactionHash: String                    # Unique transaction hash
+    inputStateRefs: [String]                   # References to input states
+    outputStatesRefs: [String]                 # References to output states
+}
+
+type PostTradeDocumentSeal {
+    id: ID                                     # Unique identifier for document seal
+    dtt: DigitalTradeTransaction               # Associated digital trade transaction
+    documentStatus: DocumentStatus             # Current status of the document
+    documentContentDigest: FreeForm            # Hash of document content
+    documentHashValue: String                  # Hash value for verification
+    documentSignature: FreeForm                # Digital signature on the document
+}
+
+type Signature {
+    signatureData: String                      # The signature data itself
+    DLTTransaction: DLTTransaction             # Associated DLT transaction
+    authorisedSignatoryName: MemberCollaborator # Name of authorized signatory
+    signatoryOrganisation: Member              # Organization the signatory represents
+    signatureStamp: MemberCollaborator         # Digital stamp of the signatory
+    havonaPublicKey: MemberCollaborator        # Havona platform public key
+    otherPublicKey: MemberCollaborator         # Other public key if applicable
+    signatureDateTime: DateTime                # Time and date of signature
+    signaturePlace: UNLocationCode             # Location where signed
+}
+
+type Currency {
+    name: String                               # Currency name (e.g., "US Dollar")
+    ISOCurrencyCode: ISOCurrencyCode           # ISO standard currency code
+    currencyType: CurrencyType                 # Type of currency (fiat, crypto, etc.)
+}
+
+type PaymentTerms {
+    paymentTermsCode: PaymentTermsCode         # Code representing payment terms
+    currencyCode: ISOCurrencyCode              # Currency for payment
+    principlePaymentParties: PrinciplePaymentParties # Parties involved in payment
+    swiftCode: String                          # SWIFT/BIC code for international transfers
+    aba: Int                                   # ABA routing number
+    accountNumber: Int                         # Account number
+    reference: Int                             # Payment reference number
+    paymentAmount: MoneyAmount                 # Amount to be paid
+    paymentRails: PaymentRails                 # Payment system/network to be used
+}
+
+type PaymentRails {
+    swiftGPI: SwiftGPI                         # SWIFT Global Payment Innovation
+    swiftISO20022: SwiftISO20022               # SWIFT ISO 20022 standard
+    cbdc: CBDC                                 # Central Bank Digital Currency
+    bricsPlus: BricsPlus                       # BRICS+ payment system
+    bricsPay: BricsPay                         # BRICS Pay system
+    fasterPaymentsUK: FasterPaymentsUK         # UK Faster Payments
+    sepaCredit: SepaCredit                     # SEPA Credit Transfer
+    sepaInstant: SepaInstant                   # SEPA Instant Credit Transfer
+    fedNowUsa: FedNowUSA                       # FedNow Service (USA)
+}
+
+type MoneyAmount {
+    iSOCurrencyCode: ISOCurrencyCode           # Currency code per ISO standard
+    amount: Float                              # Amount value
+    amountMaximum: MoneyAmount                 # Maximum amount if applicable
+    amountInWords: String                      # Amount spelled out in words
+}
+
+type CBDC {
+    name: String                               # Name of Central Bank Digital Currency
+}
+
+type SwiftGPI {
+    name: String                               # Name of SWIFT GPI service
+}
+
+type SwiftISO20022 {
+    name: String                               # Name of SWIFT ISO 20022 standard
+}
+
+type BricsPlus {
+    name: String                               # Name of BRICS+ payment system
+}
+
+type BricsPay {
+    name: String                               # Name of BRICS Pay system
+}
+
+type FasterPaymentsUK {
+    name: String                               # Name of UK Faster Payments service
+}
+
+type SepaCredit {
+    name: String                               # Name of SEPA Credit Transfer
+}
+
+type SepaInstant {
+    name: String                               # Name of SEPA Instant Credit Transfer
+}
+
+type FedNowUSA {
+    name: String                               # Name of FedNow Service
+}
+
+interface ElectronicRecord {
+    id: ID                                     # Unique identifier for the record
+    dtt: DigitalTradeTransaction               # Associated digital trade transaction
+    file: FreeForm                             # File content data
+    signatures: [Signature]                    # Digital signatures on the record
+    postTradeDocumentSeals: [PostTradeDocumentSeal] # Document integrity proofs
+}
+
+type HSCodes {
+    hsCodeFull: Int                            # Complete HS code (6 digits max)
+    hsChapter: Int                             # HS Chapter (2 digits max)
+    hsHeading: Int                             # HS Heading (2 digits max)
+    hsSubHeading: Int                          # HS Subheading (2 digits max)
+    cnSubHeading: Int                          # Combined Nomenclature subheading (2 digits max)
+    taricSubHeading: Int                       # TARIC subheading (2 digits max)
+    euTaricCode: Int                           # EU TARIC code (2 digits max)
+    hsCodeGoodsDescription: String             # Standard description from HS code
+    goodsDescription: ProductGoods             # Specific goods description from Havona
+    qualityWeightConditions: ProductGoods      # Quality and weight specifications
+}
+
+type Location {
+    locationName: String                       # Name of the location
+    displayedName: String                      # Displayed name of location
+    UNLocodeTypePortsOther: UNLocationCodeTypePortsOther # UN location code type
+    locationType: UNLocationCodeTypePortsOther # Type of location
+    UNLocationCode: UNLocationCode             # UN location code
+    address: Address                           # Address details
+    locationDescription: FreeForm              # Description of location
+    shippingLocation: ShippingLocation         # Shipping-specific location details
+    geocoding: Geocoding                       # Geographic coordinates
+}
+
+type ShippingLocation {
+    location: Location                         # Base location information
+    locationName: String                       # Name of shipping location
+    latitude: Int                              # Latitude coordinate
+    longitude: Int                             # Longitude coordinate
+    UNLocationCode: String                     # UN location code
+    address: Address                           # Address details
+    displayedName: String                      # Displayed name
+    locationType: UNLocationCodeTypePortsOther # Type of location
+}
+
+type GoodsDelivery {
+    transports: Transports                     # Transport details
+    partialShipment: Boolean                   # Whether partial shipment is allowed
+    transhipment: Boolean                      # Whether transhipment is allowed
+    demurrageDetention: Member                 # Party responsible for demurrage/detention
+    rules: String                              # Delivery rules
+    packaging: String                          # Packaging details
+    deliveryBasis: String                      # Basis for delivery
+    uNLocationCodeTypePortsOther: UNLocationCodeTypePortsOther # UN location code type
+    latestShipmentDate: DateTime               # Latest date for shipment
+    latestDeliveryDate: DateTime               # Latest date for delivery
+}
+
+type Transports {
+    loadLocation: Location                     # Location for loading
+    UNLocationCode: UNLocationCode             # UN location code
+    dischargeLocation: Location                # Location for discharge
+    plannedDepartureDate: DateTime             # Planned date of departure
+    plannedArrivalDate: DateTime               # Planned date of arrival
+    modeOfTransport: TransportMode             # Mode of transport (air, sea, etc.)
+    vesselIMONumber: Int                       # IMO number of vessel
+    carrierVoyageNumber: String                # Carrier voyage/flight number
+    isUnderShippersResponsibility: Boolean     # If shipper is responsible for transport
+}
+
+type Geocoding {
+    original_address: String                   # Original address before geocoding
+    relevance: Float                           # Relevance score of geocoding result
+    match_type: String                         # Type of match achieved
+    lat: String                                # Latitude
+    lng: String                                # Longitude
+    geocoding_date: DateTime                   # Date of geocoding
+    bounding_box: String                       # Geographic bounding box
+    match_level: String                        # Level of match precision
+    formatted_address: String                  # Formatted address
+    mapped_location_id: String                 # Mapped location ID
+    mapped_street: String                      # Mapped street
+    mapped_housenumber: String                 # Mapped house number
+    mapped_postalcode: String                  # Mapped postal code
+    mapped_city: String                        # Mapped city
+    mapped_district: String                    # Mapped district
+    mapped_state: String                       # Mapped state/province
+    mapped_country: String                     # Mapped country
+}
+
+type GeneralConditions {
+    periodOfPresentation: Period               # Period allowed for presentation
+    generalConditions: FreeForm                # General contract conditions
+    otherConditions: FreeForm                  # Other specific conditions
+    confidentiality: FreeForm                  # Confidentiality provisions
+    other: FreeForm                            # Other miscellaneous conditions
+}
+
+type Period {
+    pointintime: DateTime                      # Specific point in time
+    numdays: Int                               # Number of days
+    numweeks: Int                              # Number of weeks
+}
+
+type UnitMeasurements {
+    amount: MoneyAmount                        # Monetary amount
+    currency: Currency                         # Currency
+    unitPrice: Float                           # Price per unit
+    totalPrice: Float                          # Total price
+    unitsValue: MoneyAmount                    # Value per unit
+    totalValue: MoneyAmount                    # Total value
+    totalNetWeightKG: Int                      # Total net weight in kilograms
+    quantityPerMeasurement: Int                # Quantity per measurement unit
+    quantityWeight: Int                        # Weight of quantity
+    totalNetWeight: String                     # Total net weight
+    weightUnit: WeightUnit                     # Unit of weight measurement
+    volumeUnit: VolumeUnit                     # Unit of volume measurement
+    weight: Int                                # Weight value
+    volume: Int                                # Volume value
+    totalGrossWeightKG: Int                    # Total gross weight in kilograms
+    totalNumberOfBags: Int                     # Total number of bags
+    totalNumberOfContainers: Int               # Total number of containers
+    totalQuantityLoadedTonnes: Int             # Total quantity loaded in tonnes
+    unitNetWeightBagsKg: Int                   # Net weight per bag in kilograms
+    unitGrossWeightBagsKg: Int                 # Gross weight per bag in kilograms
+    cargoGrossWeightUnit: WeightUnit           # Unit for cargo gross weight
+    cargoGrossWeight: Int                      # Cargo gross weight
+    tareWeight: Int                            # Tare weight
+}
+
+type FreeForm {
+    blob: String                               # Binary or text content
+}
+
+type TransportDocumentEBL implements ElectronicRecord {
+    id: ID                                     # Unique identifier
+    file: FreeForm                             # File content
+    dtt: DigitalTradeTransaction               # Associated digital trade transaction
+    uNECEDocumentCodes: UNECEDocumentCodes     # UN standard document codes
+    DCSAAPIversion: String                     # DCSA API version
+    TransportDocReference: String              # Transport document reference
+    billsOfLadingNo: Int                       # Bill of lading number
+    PlaceOfIssue: String                       # Place where document was issued
+    IssueDate: DateTime                        # Date of issue
+    receivedForShipmentDate: DateTime          # Date received for shipment
+    termsAndConditions: String                 # Terms and conditions
+    issuerCode: String                         # Code of issuer
+    issuerCodeListProvider: String             # Provider of issuer code list
+    declaredValueCurrency: Currency            # Currency of declared value
+    declaredValue: Int                         # Declared value amount
+    numberOfRiderPages: Int                    # Number of additional pages
+    cargoMovementTypeAtOrigin: CargoMovementTypeAtOrigin # Type of cargo movement at origin
+    cargoMovementTypeAtDestination: CargoMovementTypeAtDestination # Type at destination
+    receiptDeliveryTypeAtOrigin: String        # Receipt type at origin
+    receiptDeliveryTypeAtDestination: String   # Delivery type at destination
+    serviceContractReference: String           # Service contract reference
+    shippingInstruction: String                # Shipping instruction
+    shippingInstructionID: String              # Shipping instruction ID
+    transportElectronicRecordType: String      # Type of electronic record
+    isShippedOnboardType: Boolean              # If shipped onboard
+    numberOfCopies: Int                        # Number of copies
+    numberOfOriginals: Int                     # Number of originals
+    preCarriageUnderShippersResponsibility: String # Pre-carriage responsibility
+    invoicePayableAt: Location                 # Where invoice is payable
+    isElectronic: Boolean                      # If document is electronic
+    isChargesDisplayed: Boolean                # If charges are displayed
+    carrierBookingReference: String            # Carrier booking reference
+    cargoItem: CargoItem                       # Cargo item details
+    utilizedTransportEquipments: UtilizedTransportEquipments # Transport equipment used
+    ElectronicRecordParties: [TransportMemberDCSA] # Parties to the electronic record
+    shipmentLocation: ShippingLocation         # Shipment location
+    references: [Reference]                    # References
+    charges: [Charge]                          # Charges
+    clauses: [Clause]                          # Clauses
+    transports: Transports                     # Transport details
+    electronicSignature: Signature             # Electronic signature
+    shipment: Shipment                         # Shipment details
+    hasTitleOwnerShipChanged: Boolean          # If title ownership has changed
+    documentStatus: DocumentStatus             # Status of document
+    signatures: [Signature]                    # Digital signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal] # Document integrity proofs
+    negotiableInstrumentConfig: NegotiableInstrumentConfig # Negotiable instrument config
+    fieldStatuses: [FieldStatus]               # Tracks current field status
+    fieldHistories: [FieldHistory]             # Tracks changes over time
+}
+
+type BillOfLading implements ElectronicRecord {
+    id: ID                                     # Unique identifier
+    file: FreeForm                             # File content
+    dtt: DigitalTradeTransaction               # Associated digital trade transaction
+    uNECEDocumentCodes: UNECEDocumentCodes     # UN standard document codes
+    details: String                            # Bill of lading details
+    signatures: [Signature]                    # Digital signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal] # Document integrity proofs
+    fieldStatuses: [FieldStatus]               # Tracks current field status
+    fieldHistories: [FieldHistory]             # Tracks changes over time
+}
+
+type ShippingInstructionEBL implements ElectronicRecord {
+    id: ID                                     # Unique identifier
+    file: FreeForm                             # File content
+    uNECEDocumentCodes: UNECEDocumentCodes     # UN standard document codes
+    dtt: DigitalTradeTransaction               # Associated digital trade transaction
+    shippingInstructionReference: String       # Shipping instruction reference
+    documentStatus: ShippingInstructionDocumentStatus # Document status
+    transportDocumentTypeCode: ShippingInstructionTransportDocumentTypeCode # Document type
+    shippingInstructionCreatedDateTime: DateTime # Creation date/time
+    shippingInstructionUpdatedDateTime: DateTime # Update date/time
+    amendToTransportDocument: String           # Amendment to transport document
+    isShippedOnBoardType: Boolean              # If shipped onboard
+    numberOfCopiesWithCharges: Int             # Number of copies with charges
+    numberOfCopiesWithoutCharges: Int          # Number of copies without charges
+    numberOfOriginalsWithCharges: Int          # Number of originals with charges
+    numberOfOriginalsWithoutCharges: Int       # Number of originals without charges
+    isElectronic: Boolean                      # If document is electronic
+    isToOrder: Boolean                         # If document is to order
+    displayedNameForPlaceOfReceipt: String     # Display name for receipt place
+    displayedNameForPortOfLoad: String         # Display name for load port
+    displayedNameForPortOfDischarge: String    # Display name for discharge port
+    displayedNameForPlaceOfDelivery: String    # Display name for delivery place
+    carrierBookingReferences: String           # Carrier booking references
+    signatures: [Signature]                    # Digital signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal] # Document integrity proofs
+    fieldStatuses: [FieldStatus]               # Tracks current field status
+    fieldHistories: [FieldHistory]             # Tracks changes over time
+}
+
+type NegotiableInstrumentConfig {
+    id: ID                                     # Unique identifier
+    isNegotiable: Boolean                      # If instrument is negotiable
+    isElectronic: Boolean                      # If instrument is electronic
+    bearerIfNegotiableTrue: Member             # Bearer if negotiable
+    favourIfNegotiableFalse: Member            # Favor if not negotiable
+    issuer: Member                             # Issuer of instrument
+    amount: MoneyAmount                        # Monetary amount
+    dateIssued: DateTime                       # Issue date
+    dateMature: DateTime                       # Maturity date
+    terms: String                              # Terms of instrument
+    jurisdiction: DigitalTradeLawJurisdiction  # Legal jurisdiction
+    signatures: [Signature]                    # Digital signatures
+    referenceNumber: String                    # Reference number
+    status: String                             # Status of instrument
+}
+
+type TransportMemberDCSA {
+    party: Member                              # Party to transport
+    partyName: Member                          # Name of party
+    taxReference1: String                      # Primary tax reference
+    taxReference2: String                      # Secondary tax reference
+    memberPublicKey: Member                    # Member's public key
+    address: Address                           # Address information
+    name: String                               # Name
+    street: String                             # Street address
+    streetNumber: String                       # Street number
+    floor: String                              # Floor
+    postCode: String                           # Postal code
+    city: String                               # City
+    stateRegion: String                        # State or region
+    nmftaCode: NMFTACode                       # NMFTA code
+    partyFunction: String                      # Function of party
+    displayedAddress: Address                  # Displayed address
+    partyContactDetails: String                # Contact details
+    isToBeNotified: Boolean                    # If party should be notified
+}
+
+type UtilizedTransportEquipments {
+    equipment: Equipment                       # Equipment details
+    cargoGrossWeightUnit: String               # Unit for cargo gross weight
+    cargoGrossWeight: Int                      # Cargo gross weight
+    activeReeferSettings: ActiveReeferSettings  # Active reefer settings
+    seals: [Seal]                              # Seals on equipment
+}
+
+type Equipment {
+    equipmentReference: String                 # Equipment reference
+    ISOEquipmentCode: String                   # ISO equipment code
+    tareWeight: Int                            # Tare weight
+    weightUnit: WeightUnit                     # Weight unit
+    isShipperOwned: Boolean                    # If owned by shipper
+}
+
+type ActiveReeferSettings {
+    temperatureMin: Int                        # Minimum temperature
+    temperatureMax: Int                        # Maximum temperature
+    temperatureUnit: String                    # Temperature unit
+    humidityMin: Int                           # Minimum humidity
+    humidityMax: Int                           # Maximum humidity
+    ventilationMin: Int                        # Minimum ventilation
+    ventilationMax: Int                        # Maximum ventilation
+}
+
+type Seal {
+    sealNumber: String                         # Seal number
+    sealSource: String                         # Source of seal
+    sealType: String                           # Type of seal
+}
+
+type CargoItem {
+    cargoLineItems: CargoLineItem              # Cargo line items
+    cargoLineItemID: String                    # Cargo line item ID
+    shippingMarks: String                      # Shipping marks
+    carrierBookingReference: String            # Carrier booking reference
+    descriptionOfGoods: String                 # Description of goods
+    HSCODE: String                             # HS code
+    weight: Int                                # Weight
+    volume: Int                                # Volume
+    weightUnit: String                         # Weight unit
+    volumeUnit: String                         # Volume unit
+    numberOfPackages: Int                      # Number of packages
+    packageCode: String                        # Package code
+    equipmentReference: String                 # Equipment reference
+}
+
+type CargoLineItem {
+    cargoLineItemId: ID                        # Cargo line item ID
+    shippingMarks: String                      # Shipping marks
+}
+
+type Clause {
+    clauseContent: String                      # Content of clause
+}
+
+type Price {
+    amount: Float                              # Amount
+    currency: Currency                         # Currency
+}
+
+type Charge {
+    chargeType: String                         # Type of charge
+    currencyAmount: MoneyAmount                # Amount in currency
+    currencyCode: String                       # Currency code
+    paymentTerm: PaymentTerm                   # Payment term
+    calculationBasis: String                   # Basis for calculation
+    unitPrice: Price                           # Unit price
+    quantity: MoneyAmount                      # Quantity
+}
+
+type Reference {
+    referenceType: String                      # Type of reference
+    referenceValue: String                     # Reference value
+}
+
+type Shipment {
+    details: String                            # Shipment details
+    partial: Boolean                           # If partial shipment
+    date: DateTime                             # Shipment date
+    transhipment: Boolean                      # If transhipment
+    to: Location                               # Destination location
+    from: Location                             # Origin location
+    electronicRecordsRequired: ElectronicRecord # Required electronic records
+}
+
+type FieldStatus {
+    fieldName: String                          # Name of field
+    buyerValue: String                         # Value set by buyer
+    sellerValue: String                        # Value set by seller
+    status: StatusEnum                         # Status of field
+}
+
+type FieldHistory {
+    fieldName: String                          # Name of field
+    changes: [FieldChange]                     # History of changes
+}
+
+type FieldChange {
+    timestamp: DateTime                        # Time of change
+    oldValue: String                           # Previous value
+    newValue: String                           # New value
+    updatedByMember: Member                    # Member who made update
+    updatedByMemberCollaborator: MemberCollaborator # Collaborator who made update
+}
+
+type ProFormaInvoice implements ElectronicRecord {
+    id: ID                                     # Unique identifier
+    dtt: DigitalTradeTransaction               # Associated digital trade transaction
+    tradeContract: TradeContract               # Associated trade contract
+    file: FreeForm                             # File content
+    creationDate: DateTime                     # Creation date
+    declaration: FreeForm                      # Declaration information
+    uNECEDocumentCodes: UNECEDocumentCodes     # UN standard document codes
+    customsLoading: Member                     # Customs at loading
+    customsDestination: Member                 # Customs at destination
+    shippersDetails: Member                    # Shipper details
+    productDescription: ProductGoods           # Product description
+    reasonForExport: FreeForm                  # Reason for export
+    collectionAddress: Address                 # Collection address
+    deliveryAddress: Address                   # Delivery address
+    signatures: [Signature]                    # Digital signatures
+    postTradeDocumentSeals: [PostTradeDocumentSeal] # Document integrity proofs
+    fieldStatuses: [FieldStatus]               # Tracks current field status
+    fieldHistories: [FieldHistory]             # Tracks changes over time
+}
+
+enum LoanType {
+    BG                                         # Bank Guarantee
+    EPU                                        # Electronic Payment Undertaking
+    LC                                         # Letter of Credit
+    OPEN_ACCOUNT                               # Open Account
+    PROMISSORY_NOTE                            # Promissory Note
+}
+
+enum CollaboratorRole {
+    ADMIN                                      # Administrator
+    MANAGER                                    # Manager
+    OPERATOR                                   # Operator
+    VIEWER                                     # Viewer
+    TRADER                                     # Trader
+}
+
+enum StatusEnum {
+    AGREED                                     # Both parties have agreed
+    PENDING                                    # Awaiting agreement
+    ATTENTION_NEEDED                           # Requires attention
+}
+
+enum Department {
+    TRADINGDESK                                # Trading desk
+    OPERATOR                                   # Operator
+    LOGISTICS                                  # Logistics
+    TRADEFINANCE                               # Trade finance
+    COMPLIANCE                                 # Compliance
+    RISK                                       # Risk management
+    TECHNOLOGY                                 # Technology
+    GENERAL                                    # General
+    FINANCE                                    # Finance
+    BACKOFFICE                                 # Back office
+}
+
+enum URDTTMemberRole {
+    ADDRESSEEURDTT                             # Addressee
+    BENEFICIARYURDTT                           # Beneficiary
+    BUYERURDTT                                 # Buyer
+    OBLIGORURDTT                               # Obligor
+    PARTYURDTT                                 # Party
+    PERSONURDTT                                # Person
+    PRINCIPLEPARTYURDTT                        # Principle party
+    SELLERURDTT                                # Seller
+    SUBMITTERURDTT                             # Submitter
+    FSPURDTT                                   # Financial service provider
+}
+
+enum HavonaMemberRole {
+    BUYER                    # Buyer
+    SELLER                   # Seller
+    SHIPPER                  # Shipper
+    BROKER                   # Broker
+    SURVEYOR                 # Surveyor
+    COLLATERALMANAGER        # Collateral manager
+    WAREHOUSE                # Warehouse
+    CUSTOMSENTITY            # Customs entity
+    CHAMBEROFCOMMERCE        # Chamber of commerce
+    PARTY                    # Party
+    PERSON                   # Person
+    PRINCIPALPARTY           # Principal party
+    SUBMITTER                # Submitter
+    BENEFICIARY              # Beneficiary
+    OBLIGOR                  # Obligor
+    ADDRESSEE                # Addressee
+    COMPANYENTITY            # Company entity
+    TRANSPORTENTITY          # Transport entity
+    SHIPSCAPTAIN             # Ship's captain
+    COLLABORATORPERSON       # Collaborator person
+    FSPBANK                  # FSP bank
+    FSPINSURER               # FSP insurer
+    FSPBENEFICIARYBANK       # FSP beneficiary bank
+    FSPISSUINGBANK           # FSP issuing bank
+    FSPCONFIRMINGBANK        # FSP confirming bank
+    FSPNOMINATEDBANK         # FSP nominated bank
+    FSPPREVCONFIRMINGBANK    # FSP previous confirming bank
+}
+
+enum Department {
+    TRADINGDESK              # Trading desk
+    OPERATOR                 # Operator
+    LOGISTICS                # Logistics
+    TRADEFINANCE             # Trade finance
+    COMPLIANCE               # Compliance
+    RISK                     # Risk
+    TECHNOLOGY               # Technology
+    GENERAL                  # General
+    FINANCE                  # Finance
+    BACKOFFICE               # Back office
+}
+
+enum UNCountryCode {
+    AE                       # United Arab Emirates
+    BJ                       # Benin
+    IRE                      # Ireland
+    UK                       # United Kingdom
+    CH                       # Switzerland
+    US                       # United States
+    PH                       # Philippines
+    BR                       # Brazil
+    SA                       # Saudi Arabia
+}
+
+enum UNLocationCode {
+    USNYC                    # New York, United States
+    CHLAU                    # Lausanne, Switzerland
+    PHMNL                    # Manila, Philippines
+    PHCEB                    # Cebu, Philippines
+    IEBTM                    # Ballitore, Ireland
+    ITLIV                    # Livorno, Italy
+    USBAL                    # Baltimore, United States
+    USLAX                    # Los Angeles, United States
+    GBEAW                    # Eastleigh, United Kingdom
+    GBGBN                    # Great Britain North
+    GBUKM                    # United Kingdom
+    TGBJ                     # Benin, Togo
+    TGLFW                    # Lomé, Togo
+    CNTAO                    # Qingdao, China
+    RUNVS                    # Novosibirsk, Russia
+    PYASU                    # Asunción, Paraguay
+    TNSFA                    # Sfax, Tunisia
+    BRPNG                    # Paranaguá, Brazil
+}
+
+enum UNLocationCodeTypePortsOther {
+    PORT_UNCODE_1                        # Port UN code 1
+    RAIL_TERMINAL_UNCODE_2               # Rail terminal UN code 2
+    ROAD_TERMINAL_UNCODE_3               # Road terminal UN code 3
+    AIRPORT_UNCODE_4                     # Airport UN code 4
+    POSTAL_EXCHANGE_OFFICE_UNCODE_5      # Postal exchange office UN code 5
+    RES_FOR_MULTIMODAL_ICDS_UNCODE_6     # Reserved for multimodal ICDs UN code 6
+    RES_FOR_MULTIMODAL_EG_OIL_PLATFRM_UNCODE_7  # Reserved for multimodal e.g. oil platform UN code 7
+    BORDER_CROSSING_UNCODE_8             # Border crossing UN code 8
+    FUNC_NOT_KNOWN_UNCODE_0              # Function not known UN code 0
+}
+
+enum DigitalTradeLawJurisdiction {
+    ENGLISH_LAW_ENGLAND_AND_WALES        # English law - England and Wales
+    SINGAPORE_LAW                        # Singapore law
+    UNITED_ARAB_EMIRATES_LAW             # United Arab Emirates law
+    HONG_KONG_LAW                        # Hong Kong law
+}
+
+enum TransportMode {
+    VESSEL                    # Vessel
+    RAIL                      # Rail
+    ROAD                      # Road
+    BARGE                     # Barge
+    AIR                       # Air
+}
+
+enum UNECEDocumentCodes {
+    CONTRACT_CODE_315                                # Contract code 315
+    CERTIFICATE_OF_ANALYSIS_CODE_1                   # Certificate of analysis code 1
+    CERTIFICATE_OF_ORIGIN_861                        # Certificate of origin 861
+    PROFORMA_INVOICE_CODE_325                        # Proforma invoice code 325
+    COMMERCIAL_INVOICE_CODE_380                      # Commercial invoice code 380
+    PHYTO_SANITARY_CERT_CODE_851                     # Phytosanitary certificate code 851
+    SANITARY_CERTIFICATE_CODE_852                    # Sanitary certificate code 852
+    PACKING_LIST_CODE_271                            # Packing list code 271
+    BANKERS_GUARANTEE_CODE_430                       # Bankers guarantee code 430
+    DOCUMENTARY_CREDIT_LETTER_OF_INDEMNITY_CODE_431  # Documentary credit letter of indemnity code 431
+    MASTER_BILL_OF_LADING_CODE_704                   # Master bill of lading code 704
+    BILL_OF_LADING_CODE_705                          # Bill of lading code 705
+    BILL_OF_LADING_ORIGINAL_CODE_706                 # Bill of lading original code 706
+    BILL_OF_LADING_COPY_CODE_707                     # Bill of lading copy code 707
+    COMBINED_TRANSPORT_BILL_OF_LADING_CODE_766       # Combined transport bill of lading code 766
+    CUSTOMS_DELIVERY_NOTE_CODE_932                   # Customs delivery note code 932
+    CUSTOMS_INVOICE_CODE_935                         # Customs invoice code 935
+    CERTIFICATE_OF_ORIGIN_CODE_861                   # Certificate of origin code 861
+    IMPORT_LICENCE_CODE_911                          # Import license code 911
+    EXPORT_LICENCE_CODE_810                          # Export license code 810
+    MATES_RECEIPT_CODE_713                           # Mates receipt code 713
+    PREVIOUS_TRANSPORT_DOCUMENT_CODE_499             # Previous transport document code 499
+    INSURANCE_CERTIFICATE_CODE_520                   # Insurance certificate code 520
+    DOCUMENTARY_CREDIT_PAYMENT_ADVICE_CODE_426       # Documentary credit payment advice code 426
+    DOCUMENTARY_CREDIT_ACCEPTANCE_ADVICE_CODE_427    # Documentary credit acceptance advice code 427
+    DOCUMENTARY_CREDIT_NEGOTIATION_ADVICE_CODE_428   # Documentary credit negotiation advice code 428
+    APPLICATIONS_FOR_GUARANTEE_FOR_BANKER_CODE_429   # Applications for guarantee for banker code 429
+    BANKERS_DRAFT_CODE_485                           # Bankers draft code 485
+    BILL_OF_EXCHANGE_CODE_490                        # Bill of exchange code 490
+    PROMISSORY_NOTE_CODE_491                         # Promissory note code 491
+    WAREHOUSE_WARRANT_CODE_635                       # Warehouse warrant code 635
+    FORWARDERS_WAREHOUSE_RECEIPT_CODE_631            # Forwarders warehouse receipt code 631
+    FORWARDERS_BILL_OF_LADING_CODE_716               # Forwarders bill of lading code 716
+}
+
+enum IncoTerm {
+    FAS                       # Free Alongside Ship
+    CFR                       # Cost and Freight
+    CIF                       # Cost, Insurance and Freight
+    EXW                       # Ex Works
+    FCA                       # Free Carrier
+    CPT                       # Carriage Paid To
+    CIP                       # Carriage and Insurance Paid To
+    DPU                       # Delivered at Place Unloaded
+    DAP                       # Delivered at Place
+    DDP                       # Delivered Duty Paid
+    FOB                       # Free on Board
+}
+
+enum ElectronicPaymentUndertakings {
+    BILL_OF_EXCHANGE          # Bill of Exchange
+    PROMISSORY_NOTE           # Promissory Note
+    EPU_ELECTRONIC_PAYMENT_UNDERTAKING  # EPU Electronic Payment Undertaking
+    ISO20022                  # ISO 20022
+}
+
+enum PaymentTermsCode {
+    NET30_NET30DAYS                      # Net 30 days
+    NET45_NET45DAYS                      # Net 45 days
+    NET60_NET60DAYS                      # Net 60 days
+    COD_CASH_ON_DELIVERY                 # Cash on Delivery
+    COA_CASH_ON_ACCOUNT                  # Cash on Account
+    CIA_CASH_IN_ADVANCE                  # Cash in Advance
+    LC_LETTER_OF_CREDIT                  # Letter of Credit
+    DP_DOCUMENTS_AGAINST_PAYMENT         # Documents against Payment
+    DA_DOCUMENTS_AGAINST_ACCEPTANCE      # Documents against Acceptance
+    CAD_CASH_AGAINST_DOCUMENTS           # Cash against Documents
+    FOB_FREE_ON_BOARD                    # Free on Board
+    CIF_COST_INSURANCE_AND_FREIGHT       # Cost Insurance and Freight
+    EXW_EX_WORKS                         # Ex Works
+    FCA_FREE_CARRIER                     # Free Carrier
+}
+
+enum ISOCurrencyCode {
+    EUR                       # Euro
+    USD                       # US Dollar
+    YEN                       # Japanese Yen
+}
+
+enum CurrencyType {
+    CDBC                      # Central Bank Digital Currency
+    FIAT                      # Fiat Currency
+}
+
+enum DocumentStatus {
+    PENDING                   # Pending
+    REVIEWING                 # Reviewing
+    REJECTED                  # Rejected
+    ACCEPTED_AGREED           # Accepted/Agreed
+    SEALED                    # Sealed
+}
+
+enum DigitalTradeTransactionStatus {
+    BLOTTING                          # Blotting
+    CONTRACT_INITIATED                # Contract Initiated
+    CONTRACT_IN_PROGRESS              # Contract In Progress
+    CONTRACT_FINALISED                # Contract Finalised
+    DTT_INITIATED                     # DTT Initiated
+    DTT_IN_PROGRESS                   # DTT In Progress
+    ELECTRONIC_RECORDS_PENDING        # Electronic Records Pending
+    LOADING                           # Loading
+    IN_TRANSIT                        # In Transit
+    DISCHARGING                       # Discharging
+    ANALYSIS_PENDING                  # Analysis Pending
+    ANALYSIS_COMPLETE                 # Analysis Complete
+    PAYMENT_PENDING                   # Payment Pending
+    PAYMENT_COMPLETE                  # Payment Complete
+    ELECTRONIC_RECORDS_FINALISED      # Electronic Records Finalised
+    TITLE_TRANSFER                    # Title Transfer
+    CLOSED_UNSUCCESSFULLY             # Closed Unsuccessfully
+    CLOSED_SUCCESSFULLY               # Closed Successfully
+    DTT_FINALISED                     # DTT Finalised
+}
+
+enum WeightUnit {
+    KGM                       # Kilogram
+    KG                        # Kilogram
+    TNE                       # Tonne (Metric Ton)
+    GT                        # Gross Ton
+    NT                        # Net Ton
+    MT                        # Metric Ton
+    LT                        # Long Ton
+    ST                        # Short Ton
+    LBS                       # Pounds
+}
+
+enum VolumeUnit {
+    CBM                       # Cubic Meter
+    CU_FT                     # Cubic Foot
+    TEU                       # Twenty-Foot Equivalent Unit
+    FEU                       # Forty-Foot Equivalent Unit
+}
+
+
+
+
